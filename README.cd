@@ -1,0 +1,44 @@
+# ⚛️ Tabela Periódica Interativa & Acessível
+
+Uma aplicação web interativa projetada para tornar o aprendizado da Química inclusivo, dinâmico e acessível para todos. Este projeto reconstrói a Tabela Periódica tradicional em uma interface digital que respeita as diretrizes de acessibilidade, permitindo que estudantes e entusiastas com diferentes capacidades explorem os elementos químicos sem barreiras.
+
+---
+
+## 🚀 Demonstração
+
+* [🔗 Acesse o projeto online aqui](https:
+
+---
+
+## ✨ Funcionalidades Principais
+
+* **Interatividade Total:** Clique nos elementos para abrir visões detalhadas, propriedades químicas, configurações eletrônicas e históricos de descoberta.
+* **Filtros por Grupos/Famílias:** Destaque instantâneo de Metais, Ametais, Gases Nobres, Lantanídeos, Actinídeos, entre outros.
+* **Design Responsivo:** Explore a tabela perfeitamente tanto em telas de computadores quanto em tablets e smartphones.
+
+---
+
+## ♿ Recursos de Acessibilidade (WCAG Compliant)
+
+A acessibilidade não é um recurso adicional, é o coração deste projeto. Implementamos práticas baseadas nas diretrizes da WCAG (Web Content Accessibility Guidelines):
+
+* **Navegação por Teclado Completa:** Todos os elementos e menus podem ser focados e ativados utilizando apenas as teclas `Tab`, `Shift + Tab` e `Enter/Space`.
+* **Compatibilidade com Leitores de Tela:** Uso rigoroso de semântica HTML5 e atributos **ARIA (Accessible Rich Internet Applications)** para que usuários com deficiência visual tenham a descrição exata de cada elemento e grupo selecionado.
+* **Suporte para Daltonismo:** Modos de visualização alternativos (como texturas, alto contraste ou paletas de cores validadas) para garantir a distinção dos grupos de elementos (Protanopia, Deuteranopia e Tritanopia).
+* **Controle de Zoom e Fontes:** Layout flexível que não quebra ao aumentar a fonte do navegador ou aplicar zoom de até 200%.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+* **HTML5** (Semântico)
+* **CSS3 / TailwindCSS** (Para estilização flexível e modos de contraste)
+* **JavaScript (ES6+)** / *[Seu Framework aqui: ex: React / Vue / Vanilla JS]* (Manipulação dinâmica de dados e gerenciamento de estados de acessibilidade)
+
+---
+
+## 📖 Como Rodar o Projeto Localmente
+
+1. Clone o repositório:
+   ```bash
+   git clone [https:
