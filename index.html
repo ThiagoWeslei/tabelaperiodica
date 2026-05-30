@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tabela Periódica Interativa</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+
+/* ===== VARIÁVEIS / TEMAS ===== */
+:root {
+  --bg-deep:    #0d0d12;
+  --bg-panel:   #13131a;
+  --bg-card:    #1a1a24;
+  --bg-hover:   #22223a;
+  --border:     #2a2a3d;
+  --accent:     #00e5ff;
+  --text-main:  #e8e8f0;
+  --text-dim:   #7a7a9a;
+  --c-solid:    #4a9eff;
+  --c-liquid:   #ff5252;
+  --c-gas:      #69f0ae;
+  --c-unknown:  #777;
+  --c-transition: #f39c12;
+  --c-lanthanide: #9b59b6;
+}
+[data-theme="light"] {
+  --bg-deep:   #f0f0f5;
+  --bg-panel:  #e4e4ee;
+  --bg-card:   #ffffff;
+  --bg-hover:  #dde0f0;
+  --border:    #c0c0d8;
+  --accent:    #0077aa;
+  --text-main: #111122;
+  --text-dim:  #555570;
+}
+[data-contrast="high"] {
+  --bg-deep:   #000000;
+  --bg-panel:  #000000;
+  --bg-card:   #111111;
+  --bg-hover:  #222222;
+  --border:    #ffffff;
+  --accent:    #ffff00;
+  --text-main: #ffffff;
+  --text-dim:  #dddddd;
+}
+
+/* ===== RESET ===== */
+*{box-sizing:border-box;margin:0;padding:0;}
+
+/* ===== SKIP LINK ===== */
+.skip-link{
+  position:absolute;top:-9999px;left:-9999px;
+  background:var(--accent);color:#000;padding:8px 16px;border-radius:4px;
+  font-weight:700;z-index:9999;font-family:'Rajdhani',sans-serif;text-decoration:none;
+}
+.skip-link:focus{top:8px;left:8px;}
+
+/* ===== LAYOUT ===== */
+body{
+  background:var(--bg-deep);color:var(--text-main);
+  font-family:'Rajdhani',sans-serif;
+  display:flex;flex-direction:column;
+  height:100vh;overflow:hidden;
+}
+
+/* ===== TOOLBAR DE ACESSIBILIDADE — bottom-left ===== */
+.toolbar{
+  position:fixed;bottom:12px;left:12px;
+  display:flex;gap:5px;z-index:200;
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:5px 7px;
+}
+.toolbar-btn{
+  background:transparent;
+  border:1px solid transparent;
+  color:var(--text-dim);
+  border-radius:5px;
+  padding:4px 9px;
+  cursor:pointer;
+  font-size:0.72rem;
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  letter-spacing:.04em;
+  transition:background 0.15s,color 0.15s,border-color 0.15s;
+  white-space:nowrap;
+}
+.toolbar-btn:hover,.toolbar-btn:focus-visible{
+  background:var(--bg-hover);color:var(--text-main);
+  border-color:var(--accent);
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+.toolbar-btn[aria-pressed="true"]{
+  background:var(--accent);color:#000;border-color:var(--accent);
+}
+.toolbar-sep{width:1px;background:var(--border);margin:2px 2px;}
+
+/* ===== TABELA ===== */
+.main-content{flex:1;display:flex;flex-direction:column;padding:6px 8px 4px;overflow:hidden;min-width:0;}
+#periodic-table{
+  display:grid;
+  grid-template-columns:18px repeat(18,1fr);
+  grid-template-rows:18px repeat(7,1fr) 5px 1fr 1fr;
+  gap:3px;flex:1;min-height:0;
+}
+.family-label{
+  grid-row:1;display:flex;align-items:center;justify-content:center;
+  font-family:'Share Tech Mono',monospace;font-size:0.9rem;color:var(--text-dim);
+  border-bottom:1px solid var(--border);user-select:none;
+}
+.period-label{
+  grid-column:1;display:flex;align-items:center;justify-content:center;
+  font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-dim);user-select:none;
+}
+
+/* ===== LEGENDA DEMO ===== */
+.legend-demo-cell{
+  grid-column:3/6;grid-row:3/5;
+  background:var(--bg-deep);padding:16px;
+  display:flex;flex-direction:column;justify-content:center;gap:10px;
+  z-index:2;overflow:hidden;
+}
+.demo-card-wrap{display:flex;align-items:center;gap:10px;}
+.demo-card{
+  width:150px;height:150px;flex-shrink:0;background:var(--bg-card);
+  position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;overflow:hidden;
+}
+.demo-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c-transition);}
+.demo-card .d-num{font-family:'Share Tech Mono',monospace;font-size:2rem;color:var(--text-dim);align-self:flex-start;padding-left:5px;line-height:1;}
+.demo-card .d-sym{font-family:'Rajdhani',sans-serif;font-size:5rem;font-weight:700;color:var(--c-transition);line-height:1;}
+.demo-card .d-name{font-size:1rem;color:var(--text-dim);white-space:nowrap;line-height:1;}
+.demo-card .d-dot{position:absolute;top:2px;right:2px;}
+.demo-labels{display:flex;flex-direction:column;gap:4px;font-size:0.8rem;color:var(--text-dim);}
+.demo-labels span{display:flex;align-items:center;gap:0px;}
+.demo-labels b{color:var(--text-dim);font-weight:600;}
+.demo-lbar{display:inline-block;width:3px;height:10px;background:var(--c-transition);border-radius:1px;flex-shrink:0;}
+
+/* ===== LEGENDA CATS + ESTADOS ===== */
+.legend-cats-cell{
+  grid-column:7/14;grid-row:2/4;
+  background:var(--bg-deep);
+  padding:7px 10px;z-index:2;
+  display:flex;flex-direction:column;justify-content:space-evenly;gap:3px;
+}
+.legend-section-label{
+  font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text-dim);padding-bottom:1px;
+}
+.legend-cats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(4,auto);
+  gap:3px;flex:1;min-height:0;
+}
+.legend-states{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:3px;
+}
+.legend-divider{height:1px;background:var(--border);flex-shrink:0;margin:2px 0;}
+
+/* ===== BOTÕES DE FILTRO (legend-item) ===== */
+.legend-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:clamp(0.62rem,0.58vw,1rem);font-weight:600;
+  color:var(--text-dim);
+  white-space:normal;cursor:pointer;padding:2px 4px;border-radius:3px;
+  border:1px solid transparent;
+  transition:all 0.15s;user-select:none;
+  background:transparent;
+  font-family:'Rajdhani',sans-serif;
+}
+.legend-item:hover,.legend-item:focus-visible{
+  background:var(--bg-hover);color:var(--text-main);
+  border-color:var(--border);
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+/* Estado ativo: usa a cor da categoria diretamente via variável inline */
+.legend-item.ativo{
+  color:#fff;
+  border-color:var(--item-color, var(--accent));
+  background:color-mix(in srgb, var(--item-color, var(--accent)) 20%, transparent);
+}
+[data-theme="light"] .legend-item.ativo{color:#111;}
+
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+/* ===== ELEMENTOS ===== */
+.element{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:3px;
+  padding:2px 2px 1px;text-align:center;cursor:pointer;
+  transition:transform 0.15s,background 0.15s,box-shadow 0.15s,opacity 0.2s;
+  user-select:none;position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;overflow:hidden;min-height:0;
+}
+.element::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cat-color,#444);border-radius:3px 0 0 3px;}
+.element:hover,.element:focus-visible{
+  transform:scale(1.15);background:var(--bg-hover);
+  box-shadow:0 0 12px rgba(0,229,255,0.25);z-index:20;border-color:var(--accent);
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+.element.selected{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg-card));box-shadow:0 0 10px rgba(0,229,255,0.3);}
+.element.dim{opacity:0.1;pointer-events:none;}
+@media(prefers-reduced-motion:reduce){
+  .element,.legend-item,.toolbar-btn{transition:none!important;animation:none!important;}
+}
+.el-number{font-family:'Share Tech Mono',monospace;font-size:0.9rem;color:var(--text-dim);align-self:flex-start;line-height:2;padding-left:5px;}
+.el-symbol{font-family:'Rajdhani',sans-serif;font-size:clamp(3rem,0.95vw,2rem);font-weight:700;line-height:1;margin:1px 0;}
+.el-name{font-size:clamp(0.9rem,0.47vw,0.55rem);color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;line-height:1;}
+.state-dot{position:absolute;top:2px;right:2px;font-size:0.75rem;background:transparent;}
+.serie-toggle{border-style:dashed !important;padding:4px 2px !important;}
+.serie-toggle .toggle-arrow{font-size:0.55rem;display:block;transition:transform 0.3s;line-height:1;}
+.serie-toggle.aberta .toggle-arrow{transform:rotate(180deg);}
+.linha-serie{display:contents;}
+.linha-serie.recolhida > .element{display:none;}
+@keyframes fadeIn{from{opacity:0;transform:scaleY(0.5);}to{opacity:1;transform:scaleY(1);}}
+.linha-serie .element{animation:fadeIn 0.2s ease forwards;}
+.serie-separator{grid-column:1/-1;height:5px;}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:500;
+  opacity:0;visibility:hidden;
+  transition:opacity 0.25s,visibility 0.25s;
+}
+.modal-overlay.aberto{opacity:1;visibility:visible;}
+.modal{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  width:min(560px,95vw);
+  max-height:90vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,0.6);
+  transform:scale(0.93) translateY(16px);
+  transition:transform 0.25s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-overlay.aberto .modal{transform:scale(1) translateY(0);}
+
+.modal-header{
+  padding:14px 16px 10px;
+  background:var(--bg-deep);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:5;
+  flex-shrink:0;
+}
+.modal-top-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:4px;}
+.modal-sym-col{display:flex;flex-direction:column;align-items:flex-start;}
+.modal-symbol{font-family:'Rajdhani',sans-serif;font-size:4.5rem;font-weight:700;line-height:1;}
+.modal-number{font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:var(--text-dim);}
+.modal-info-col{flex:1;display:flex;flex-direction:column;gap:3px;padding-top:4px;}
+.modal-name{font-size:1.3rem;font-weight:700;}
+.modal-mass{font-family:'Share Tech Mono',monospace;font-size:1rem;color:var(--accent);}
+.modal-meta{font-size:0.85rem;color:var(--text-dim);letter-spacing:.04em;text-transform:uppercase;line-height:1.4;}
+.modal-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+.badge{padding:2px 8px;border-radius:20px;font-size:0.65rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:1px solid transparent;}
+.modal-close-btn{
+  margin-left:auto;align-self:flex-start;
+  background:transparent;border:1px solid var(--border);
+  border-radius:6px;color:var(--text-dim);
+  width:30px;height:30px;cursor:pointer;
+  font-size:1rem;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;flex-shrink:0;
+}
+.modal-close-btn:hover,.modal-close-btn:focus-visible{
+  background:var(--bg-hover);color:var(--text-main);border-color:var(--accent);
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+
+.modal-body{
+  padding:12px 14px;
+  display:flex;flex-direction:column;gap:10px;
+  overflow-y:auto;
+}
+.modal-body::-webkit-scrollbar{width:4px;}
+.modal-body::-webkit-scrollbar-track{background:transparent;}
+.modal-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+.info-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:6px;padding:9px 11px;
+}
+.info-card h4{
+  font-size:0.7rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--text-dim);margin-bottom:6px;
+}
+.info-card p{font-size:0.95rem;line-height:1.55;color:var(--text-main);opacity:.85;}
+.particles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.particle-box{
+  background:var(--bg-deep);border-radius:5px;padding:6px 4px;
+  text-align:center;border:1px solid var(--border);
+}
+.particle-box .pval{font-family:'Share Tech Mono',monospace;font-size:1.4rem;font-weight:700;display:block;}
+.particle-box .plabel{font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;}
+.electron-config{display:flex;flex-direction:column;gap:4px;}
+.ec-title{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:1px;}
+.ec-full{font-family:'Share Tech Mono',monospace;font-size:0.95rem;color:var(--accent);line-height:1.5;word-break:break-all;margin-bottom:5px;}
+.ec-camadas{display:flex;flex-direction:column;gap:2px;}
+.ec-row{display:flex;align-items:baseline;gap:6px;}
+.ec-camada-name{font-size:0.85rem;font-weight:700;color:var(--text-main);width:14px;flex-shrink:0;font-family:'Share Tech Mono',monospace;}
+.ec-orbitals{display:flex;flex-wrap:wrap;gap:3px;}
+.ec-orbital{font-size:0.85rem;font-family:'Share Tech Mono',monospace;white-space:nowrap;}
+
+/* ===== FOCO GLOBAL ===== */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+/* ===== LIVE REGION ===== */
+#live-region{
+  position:absolute;width:1px;height:1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;
+}
+
+</style>
+</head>
+<body>
+
+<a href="#periodic-table" class="skip-link">Pular para a tabela periódica</a>
+<div id="live-region" aria-live="polite" aria-atomic="true" role="status"></div>
+
+<!-- Toolbar de acessibilidade — canto inferior esquerdo -->
+<div class="toolbar" role="toolbar" aria-label="Opções de acessibilidade">
+  <button class="toolbar-btn" id="btnTheme"    aria-pressed="false">🌙 Claro</button>
+  <div class="toolbar-sep"></div>
+  <button class="toolbar-btn" id="btnContrast" aria-pressed="false">⬛ Contraste</button>
+  <div class="toolbar-sep"></div>
+  <button class="toolbar-btn" id="btnFontUp"   aria-label="Aumentar fonte">A+</button>
+  <button class="toolbar-btn" id="btnFontDown" aria-label="Diminuir fonte">A−</button>
+</div>
+
+<!-- Modal de detalhes -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalName" aria-hidden="true">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-top-row">
+        <div class="modal-sym-col" aria-hidden="true">
+          <span class="modal-symbol" id="modalSymbol"></span>
+          <span class="modal-number" id="modalNumber"></span>
+        </div>
+        <div class="modal-info-col">
+          <div class="modal-name"  id="modalName"></div>
+          <div class="modal-mass"  id="modalMass"></div>
+          <div class="modal-meta"  id="modalMeta"></div>
+          <div class="modal-badges" id="modalBadges"></div>
+        </div>
+        <button class="modal-close-btn" id="btnClose" aria-label="Fechar detalhes do elemento">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <section class="info-card" id="stateCard" aria-labelledby="stateCardTitle">
+        <h4 id="stateCardTitle">🌡️ Estado físico (25 °C, 1 atm)</h4>
+        <p id="modalState">—</p>
+        <div class="particles-grid" id="modalParticles" aria-label="Partículas subatômicas"></div>
+      </section>
+      <section class="info-card" aria-labelledby="configTitle">
+        <h4 id="configTitle">⚛️ Distribuição Eletrônica (Pauling)</h4>
+        <div class="electron-config" id="modalConfig"></div>
+      </section>
+      <section class="info-card" aria-labelledby="obtencaoTitle">
+        <h4 id="obtencaoTitle">🔧 Como é obtido</h4>
+        <p id="modalObtencao">—</p>
+      </section>
+      <section class="info-card" aria-labelledby="curiosidadeTitle">
+        <h4 id="curiosidadeTitle">💡 Curiosidades</h4>
+        <p id="modalCuriosidade">—</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<main class="main-content" role="main">
+  <div id="periodic-table"
+    role="grid"
+    aria-label="Tabela Periódica. Setas para navegar, Enter/Espaço para detalhes."
+    tabindex="0"
+  ></div>
+</main>
+
+<script>
+// ===== TOOLBAR =====
+let fontScale = 1;
+const btnTheme    = document.getElementById('btnTheme');
+const btnContrast = document.getElementById('btnContrast');
+const btnFontUp   = document.getElementById('btnFontUp');
+const btnFontDown = document.getElementById('btnFontDown');
+
+btnTheme.addEventListener('click',()=>{
+  const isLight = document.documentElement.getAttribute('data-theme')==='light';
+  document.documentElement.setAttribute('data-theme', isLight?'':'light');
+  btnTheme.setAttribute('aria-pressed', String(!isLight));
+  btnTheme.textContent = isLight ? '🌙 Claro' : '☀️ Escuro';
+  anunciar(isLight?'Modo escuro ativado':'Modo claro ativado');
+});
+btnContrast.addEventListener('click',()=>{
+  const isHigh = document.documentElement.getAttribute('data-contrast')==='high';
+  document.documentElement.setAttribute('data-contrast', isHigh?'':'high');
+  btnContrast.setAttribute('aria-pressed', String(!isHigh));
+  anunciar(isHigh?'Alto contraste desativado':'Alto contraste ativado');
+});
+btnFontUp.addEventListener('click',()=>{
+  fontScale = Math.min(fontScale+0.1,1.5);
+  document.documentElement.style.fontSize=(fontScale*16)+'px';
+  anunciar('Fonte aumentada');
+});
+btnFontDown.addEventListener('click',()=>{
+  fontScale = Math.max(fontScale-0.1,0.8);
+  document.documentElement.style.fontSize=(fontScale*16)+'px';
+  anunciar('Fonte diminuída');
+});
+if(window.matchMedia&&window.matchMedia('(prefers-color-scheme:light)').matches){
+  document.documentElement.setAttribute('data-theme','light');
+  btnTheme.textContent='☀️ Escuro';
+}
+
+function anunciar(msg){
+  const lr=document.getElementById('live-region');
+  lr.textContent='';
+
+}
+
+// ===== DADOS =====
+const ESTADO={
+  1:'G',2:'G',3:'S',4:'S',5:'S',6:'S',7:'G',8:'G',9:'G',10:'G',
+  11:'S',12:'S',13:'S',14:'S',15:'S',16:'S',17:'G',18:'G',
+  19:'S',20:'S',21:'S',22:'S',23:'S',24:'S',25:'S',26:'S',27:'S',28:'S',29:'S',30:'S',
+  31:'S',32:'S',33:'S',34:'S',35:'L',36:'G',
+  37:'S',38:'S',39:'S',40:'S',41:'S',42:'S',43:'S',44:'S',45:'S',46:'S',47:'S',48:'S',
+  49:'S',50:'S',51:'S',52:'S',53:'S',54:'G',
+  55:'S',56:'S',57:'S',58:'S',59:'S',60:'S',61:'S',62:'S',63:'S',64:'S',65:'S',66:'S',
+  67:'S',68:'S',69:'S',70:'S',71:'S',72:'S',73:'S',74:'S',75:'S',76:'S',77:'S',78:'S',
+  79:'S',80:'L',81:'S',82:'S',83:'S',84:'S',85:'S',86:'G',
+  87:'S',88:'S',89:'S',90:'S',91:'S',92:'S',93:'S',94:'S',95:'S',96:'S',97:'S',98:'S',
+  99:'S',100:'S',101:'S',102:'S',103:'S',
+  104:'?',105:'?',106:'?',107:'?',108:'?',109:'?',110:'?',111:'?',112:'?',113:'?',
+  114:'?',115:'?',116:'?',117:'?',118:'?'
+};
+const ESTADO_LABEL={S:'Sólido',L:'Líquido',G:'Gasoso','?':'Desconhecido'};
+const ESTADO_DESC={
+  S:'Sólido a 25 °C e 1 atm (IUPAC).',
+  L:'Líquido a 25 °C e 1 atm (IUPAC).',
+  G:'Gasoso a 25 °C e 1 atm (IUPAC).',
+  '?':'Estado não confirmado — elemento sintético ultrapesado.'
+};
+const ESTADO_DOT={S:'🧊',L:'💧',G:'💨','?':'🌀'};
+const ESTADO_COLOR={S:'var(--c-solid)',L:'var(--c-liquid)',G:'var(--c-gas)','?':'var(--c-unknown)'};
+
+const MASSA={
+  1:'1,008',2:'4,0026',3:'6,938',4:'9,0122',5:'10,81',6:'12,011',7:'14,007',8:'15,999',
+  9:'18,998',10:'20,180',11:'22,990',12:'24,305',13:'26,982',14:'28,085',15:'30,974',
+  16:'32,06',17:'35,45',18:'[39,792; 39,963]',19:'39,098',20:'40,078',21:'44,956',
+  22:'47,867',23:'50,942',24:'51,996',25:'54,938',26:'55,845',27:'58,933',28:'58,693',
+  29:'63,546',30:'65,38',31:'69,723',32:'72,630',33:'74,922',34:'78,971',35:'79,904',
+  36:'83,798',37:'85,468',38:'87,62',39:'88,906',40:'91,224',41:'92,906',42:'95,95',
+  43:'[97]',44:'101,07',45:'102,91',46:'106,42',47:'107,87',48:'112,41',49:'114,82',
+  50:'118,71',51:'121,76',52:'127,60',53:'126,90',54:'131,29',55:'132,91',56:'137,33',
+  57:'138,91',58:'140,12',59:'140,91',60:'144,24',61:'[145]',62:'150,36',63:'151,96',
+  64:'157,25',65:'158,93',66:'162,50',67:'164,93',68:'167,26',69:'168,93',70:'173,05',
+  71:'174,97',72:'178,49',73:'180,95',74:'183,84',75:'186,21',76:'190,23',77:'192,22',
+  78:'195,08',79:'196,97',80:'200,59',81:'204,38',82:'[206,14; 207,94]',83:'208,98',
+  84:'[209]',85:'[210]',86:'[222]',87:'[223]',88:'[226]',89:'[227]',90:'232,04',
+  91:'231,04',92:'238,03',93:'[237]',94:'[244]',95:'[243]',96:'[247]',97:'[247]',
+  98:'[251]',99:'[252]',100:'[257]',101:'[258]',102:'[259]',103:'[266]',104:'[267]',
+  105:'[268]',106:'[269]',107:'[270]',108:'[269]',109:'[278]',110:'[281]',111:'[282]',
+  112:'[285]',113:'[286]',114:'[289]',115:'[290]',116:'[293]',117:'[294]',118:'[294]'
+};
+const FAMILIA={
+  1:'1 (IA)',2:'2 (IIA)',3:'3 (IIIB)',4:'4 (IVB)',5:'5 (VB)',6:'6 (VIB)',
+  7:'7 (VIIB)',8:'8 (VIII)',9:'9 (VIII)',10:'10 (VIII)',11:'11 (IB)',12:'12 (IIB)',
+  13:'13 (IIIA)',14:'14 (IVA)',15:'15 (VA)',16:'16 (VIA)',17:'17 (VIIA)',18:'18 (0)'
+};
+const CAT_COLOR={
+  'Metal alcalino':'#e74c3c',
+  'Metal alcalino-terroso':'#e67e22',
+  'Lantanídeo':'#9b59b6',
+  'Actinídeo':'#8e44ad',
+  'Metal de transição':'#f39c12',
+  'Metal representativo':'#1abc9c',
+  'Semimetal':'#27ae60',
+  'Não-metal':'#3498db',
+  'Halogênio':'#2980b9',
+  'Gás nobre':'#16a085'
+};
+
+const CONFIG_EC={
+  1:'1s¹',2:'1s²',3:'[He] 2s¹',4:'[He] 2s²',5:'[He] 2s² 2p¹',6:'[He] 2s² 2p²',
+  7:'[He] 2s² 2p³',8:'[He] 2s² 2p⁴',9:'[He] 2s² 2p⁵',10:'[He] 2s² 2p⁶',
+  11:'[Ne] 3s¹',12:'[Ne] 3s²',13:'[Ne] 3s² 3p¹',14:'[Ne] 3s² 3p²',
+  15:'[Ne] 3s² 3p³',16:'[Ne] 3s² 3p⁴',17:'[Ne] 3s² 3p⁵',18:'[Ne] 3s² 3p⁶',
+  19:'[Ar] 4s¹',20:'[Ar] 4s²',21:'[Ar] 3d¹ 4s²',22:'[Ar] 3d² 4s²',
+  23:'[Ar] 3d³ 4s²',24:'[Ar] 3d⁵ 4s¹',25:'[Ar] 3d⁵ 4s²',26:'[Ar] 3d⁶ 4s²',
+  27:'[Ar] 3d⁷ 4s²',28:'[Ar] 3d⁸ 4s²',29:'[Ar] 3d¹⁰ 4s¹',30:'[Ar] 3d¹⁰ 4s²',
+  31:'[Ar] 3d¹⁰ 4s² 4p¹',32:'[Ar] 3d¹⁰ 4s² 4p²',33:'[Ar] 3d¹⁰ 4s² 4p³',
+  34:'[Ar] 3d¹⁰ 4s² 4p⁴',35:'[Ar] 3d¹⁰ 4s² 4p⁵',36:'[Ar] 3d¹⁰ 4s² 4p⁶',
+  37:'[Kr] 5s¹',38:'[Kr] 5s²',39:'[Kr] 4d¹ 5s²',40:'[Kr] 4d² 5s²',
+  41:'[Kr] 4d⁴ 5s¹',42:'[Kr] 4d⁵ 5s¹',43:'[Kr] 4d⁵ 5s²',44:'[Kr] 4d⁷ 5s¹',
+  45:'[Kr] 4d⁸ 5s¹',46:'[Kr] 4d¹⁰',47:'[Kr] 4d¹⁰ 5s¹',48:'[Kr] 4d¹⁰ 5s²',
+  49:'[Kr] 4d¹⁰ 5s² 5p¹',50:'[Kr] 4d¹⁰ 5s² 5p²',51:'[Kr] 4d¹⁰ 5s² 5p³',
+  52:'[Kr] 4d¹⁰ 5s² 5p⁴',53:'[Kr] 4d¹⁰ 5s² 5p⁵',54:'[Kr] 4d¹⁰ 5s² 5p⁶',
+  55:'[Xe] 6s¹',56:'[Xe] 6s²',57:'[Xe] 5d¹ 6s²',58:'[Xe] 4f¹ 5d¹ 6s²',
+  59:'[Xe] 4f³ 6s²',60:'[Xe] 4f⁴ 6s²',61:'[Xe] 4f⁵ 6s²',62:'[Xe] 4f⁶ 6s²',
+  63:'[Xe] 4f⁷ 6s²',64:'[Xe] 4f⁷ 5d¹ 6s²',65:'[Xe] 4f⁹ 6s²',66:'[Xe] 4f¹⁰ 6s²',
+  67:'[Xe] 4f¹¹ 6s²',68:'[Xe] 4f¹² 6s²',69:'[Xe] 4f¹³ 6s²',70:'[Xe] 4f¹⁴ 6s²',
+  71:'[Xe] 4f¹⁴ 5d¹ 6s²',72:'[Xe] 4f¹⁴ 5d² 6s²',73:'[Xe] 4f¹⁴ 5d³ 6s²',
+  74:'[Xe] 4f¹⁴ 5d⁴ 6s²',75:'[Xe] 4f¹⁴ 5d⁵ 6s²',76:'[Xe] 4f¹⁴ 5d⁶ 6s²',
+  77:'[Xe] 4f¹⁴ 5d⁷ 6s²',78:'[Xe] 4f¹⁴ 5d⁹ 6s¹',79:'[Xe] 4f¹⁴ 5d¹⁰ 6s¹',
+  80:'[Xe] 4f¹⁴ 5d¹⁰ 6s²',81:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹',82:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²',
+  83:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³',84:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴',85:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵',
+  86:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶',87:'[Rn] 7s¹',88:'[Rn] 7s²',89:'[Rn] 6d¹ 7s²',
+  90:'[Rn] 6d² 7s²',91:'[Rn] 5f² 6d¹ 7s²',92:'[Rn] 5f³ 6d¹ 7s²',93:'[Rn] 5f⁴ 6d¹ 7s²',
+  94:'[Rn] 5f⁶ 7s²',95:'[Rn] 5f⁷ 7s²',96:'[Rn] 5f⁷ 6d¹ 7s²',97:'[Rn] 5f⁹ 7s²',
+  98:'[Rn] 5f¹⁰ 7s²',99:'[Rn] 5f¹¹ 7s²',100:'[Rn] 5f¹² 7s²',101:'[Rn] 5f¹³ 7s²',
+  102:'[Rn] 5f¹⁴ 7s²',103:'[Rn] 5f¹⁴ 7s² 7p¹'
+};
+const CAMADAS_NOME=['K','L','M','N','O','P','Q'];
+const ORDEM_SUBNIVEIS=['1s','2s','2p','3s','3p','4s','3d','4p','5s','4d','5p','6s','4f','5d','6p','7s','5f','6d','7p'];
+const MAX_SUB={s:2,p:6,d:10,f:14};
+
+function distribuirEletrons(Z){
+  let e=Z,dist={};
+  for(const sub of ORDEM_SUBNIVEIS){
+    if(e<=0)break;
+    const tipo=sub[sub.length-1];
+    const max=MAX_SUB[tipo];
+    const fill=Math.min(e,max);
+    if(fill>0){dist[sub]=fill;e-=fill;}
+  }
+  return dist;
+}
+function porCamada(dist){
+  const camadas={};
+  for(const[sub,e] of Object.entries(dist)){
+    const n=parseInt(sub[0]);
+    if(!camadas[n]) camadas[n]=[];
+    camadas[n].push({sub,e});
+  }
+  return camadas;
+}
+function calcNeutrons(Z){
+  const massas={1:1,2:4,3:7,4:9,5:11,6:12,7:14,8:16,9:19,10:20,11:23,12:24,13:27,14:28,15:31,16:32,17:35,18:40,19:39,20:40,21:45,22:48,23:51,24:52,25:55,26:56,27:59,28:58,29:63,30:65,31:70,32:73,33:75,34:79,35:80,36:84,37:85,38:88,39:89,40:91,41:93,42:96,43:98,44:102,45:103,46:106,47:108,48:112,49:115,50:119,51:122,52:128,53:127,54:131,55:133,56:137,57:139,58:140,59:141,60:144,61:145,62:150,63:152,64:157,65:159,66:163,67:165,68:167,69:169,70:173,71:175,72:178,73:181,74:184,75:186,76:190,77:192,78:195,79:197,80:201,81:204,82:207,83:209,84:209,85:210,86:222,87:223,88:226,89:227,90:232,91:231,92:238,93:237,94:244,95:243,96:247,97:247,98:251,99:252,100:257,101:258,102:259,103:266};
+  for(let z=104;z<=118;z++) massas[z]=z*2+20;
+  return (massas[Z]||Z*2)-Z;
+}
+
+const CURIOSIDADES={
+  1:"O elemento mais abundante do universo — 75% de toda a matéria bariónica.",
+  2:"Ponto de ebulição mais baixo de todos os elementos (−268,9 °C).",
+  3:"Metal mais leve do mundo; flutua na água.",
+  4:"Usado em janelas de raio-X porque absorve muito pouca radiação.",
+  5:"O boro-10 absorve nêutrons e protege reatores nucleares.",
+  6:"Único elemento que forma mais compostos do que todos os outros juntos.",
+  7:"78% da atmosfera terrestre é nitrogênio.",
+  8:"Necessário para a combustão; descoberto independentemente por Scheele e Priestley.",
+  9:"O elemento mais eletronegativo da tabela periódica.",
+  10:"Usado em letreiros luminosos — produz a clássica luz laranja-vermelha.",
+  11:"Reage explosivamente com a água.",
+  12:"Queima com luz branca brilhante; usado em fogos de artifício.",
+  13:"Metal mais abundante na crosta terrestre.",
+  14:"Base de todos os chips e circuitos integrados modernos.",
+  15:"Essencial para o DNA e ATP; o fósforo branco brilha no escuro.",
+  16:"Detectado no planeta Vênus — possível sinal de vida extraterrestre.",
+  17:"Usado como arma química na Primeira Guerra Mundial (gás cloro).",
+  18:"Atmosfera de Marte contém 1,9% de argônio.",
+  19:"Segundo mineral mais abundante no corpo humano, depois do cálcio.",
+  20:"Componente principal dos ossos e dentes.",
+  21:"Adicionado ao alumínio para fazer tacos de beisebol e armações de bicicleta.",
+  22:"Tão forte quanto o aço, mas 45% mais leve.",
+  23:"Fortalece o aço de capacetes militares e armaduras.",
+  24:"Dá a cor verde ao esmeralda e ao rubi.",
+  25:"Essencial na fabricação do aço inoxidável.",
+  26:"O núcleo da Terra é principalmente ferro sólido e líquido.",
+  27:"Dá a cor azul às pinturas azuis usadas na China e no Egito antigo.",
+  28:"Componente da moeda de 25 centavos dos EUA.",
+  29:"Primeiro metal usado pelos humanos, há mais de 10.000 anos.",
+  30:"Componente do latão (Cu+Zn); protege o ferro da corrosão.",
+  31:"Único metal que derrete na palma da mão (ponto de fusão: 29,76 °C).",
+  32:"Presente nos primeiros transistores inventados em 1947.",
+  33:"Veneno histórico clássico; hoje usado em semicondutores.",
+  34:"Essencial em pequenas doses para o organismo; tóxico em doses altas.",
+  35:"Único elemento não-metal líquido à temperatura ambiente.",
+  36:"Usado em lâmpadas de flash fotográfico.",
+  37:"Relógios atômicos de rubídio são precisos a 1 segundo em 300 anos.",
+  38:"Isótopo Sr-90 é um dos resíduos mais perigosos das explosões nucleares.",
+  39:"Usado em lasers de ítrio-alumínio-granada (YAG), inclusive cirúrgicos.",
+  40:"Resistente à corrosão; usado no revestimento interno de reatores nucleares.",
+  41:"Brasil detém ~98% das reservas mundiais de nióbio.",
+  42:"Presente na lubricação de superfícies espaciais (MoS₂).",
+  43:"Primeiro elemento produzido artificialmente; sem isótopos estáveis.",
+  44:"Catalisa reações químicas junto com platina e paládio.",
+  45:"O metal mais raro da Terra; mais valioso que ouro.",
+  46:"Absorve até 900 vezes seu próprio volume em hidrogênio.",
+  47:"O melhor condutor elétrico natural.",
+  48:"Usado em baterias Ni-Cd; altamente tóxico.",
+  49:"Componente do ITO — material transparente em telas sensíveis ao toque.",
+  50:"A 'doença do estanho' faz o metal se desintegrar abaixo de 13°C.",
+  51:"Liga de antimônio enrijece o chumbo das baterias de automóveis.",
+  52:"Usado em células solares de telureto de cádmio.",
+  53:"Isótopo I-131 é usado no tratamento de câncer de tireoide.",
+  54:"Usado nos motores de íons de sondas espaciais como a Dawn.",
+  55:"O metal mais eletropositivo e reativo.",
+  56:"O 'contraste de bário' é bebido para visualizar o trato digestivo em raio-X.",
+  57:"Usado em lentes de câmeras profissionais; melhora o índice de refração do vidro.",
+  58:"Friccionar Ce gera faíscas — é o metal das pedrinhas de isqueiro.",
+  59:"Sais de Pr criam o vidro protetor dos óculos de soldadores.",
+  60:"Forma os ímãs permanentes mais poderosos do mundo.",
+  61:"Único lantanídeo sem isótopos estáveis — naturalmente radioativo.",
+  62:"Ligas Sm-Co fazem ímãs para uso em altas temperaturas.",
+  63:"Responsável pelas cores vermelha e azul em monitores de TV.",
+  64:"Agente de contraste injetável em exames de ressonância magnética.",
+  65:"A liga Terfenol-D se expande em campos magnéticos.",
+  66:"Absorve nêutrons eficazmente; usado em barras de controle de reatores.",
+  67:"Maior força magnética de qualquer elemento químico no universo.",
+  68:"Amplifica o sinal da internet em cabos de fibra óptica no fundo do oceano.",
+  69:"O menos abundante de todos os lantanídeos na natureza.",
+  70:"Resistência elétrica aumenta muito sob pressão.",
+  71:"Principal aplicação comercial é como catalisador no craqueamento de petróleo.",
+  72:"Usado em reatores nucleares e microprocessadores modernos.",
+  73:"Armazena energia nos capacitores minúsculos do seu smartphone.",
+  74:"Maior ponto de fusão de todos os metais puros (3.422 °C).",
+  75:"Usado em hélices de motores de aviões a jato; um dos elementos mais raros.",
+  76:"O elemento natural mais denso.",
+  77:"A camada de irídio na Terra provou que um asteroide extinguiu os dinossauros.",
+  78:"Não oxida a nenhuma temperatura.",
+  79:"1 grama pode ser esticado em um fio de quase 3 km de comprimento.",
+  80:"Único metal líquido à temperatura ambiente.",
+  81:"Inodoro e insípido; foi usado em venenos de rato.",
+  82:"Excelente escudo contra radiação. Os romanos o usavam em encanamentos.",
+  83:"Forma cristais em escada com cores iridescentes incrivelmente belas.",
+  84:"Descoberto por Marie Curie; milhões de vezes mais radioativo que o urânio.",
+  85:"O elemento natural mais raro da Terra — ~25 g no planeta.",
+  86:"Gás invisível e inodoro; 2ª maior causa de câncer de pulmão em ambientes fechados.",
+  87:"Isótopo mais duradouro desintegra-se em apenas 22 minutos.",
+  88:"Brilha no escuro; pintava ponteiros de relógio causando mortes por radiação.",
+  89:"Extremamente radioativo; brilha no escuro com luz azul pálida.",
+  90:"Combustível nuclear potencial — mais seguro e abundante que o urânio.",
+  91:"Um dos elementos de ocorrência natural mais raros e caros do planeta.",
+  92:"Principal combustível de reatores nucleares; núcleo da primeira bomba atômica.",
+  93:"Criado artificialmente, mas encontrado em traços mínimos na natureza.",
+  94:"Alimenta o rover Curiosity em Marte como fonte de calor radioativa.",
+  95:"Provavelmente você tem Am em casa: está nos detectores de fumaça.",
+  96:"Brilha no escuro; altamente radioativo. Homenageia Marie e Pierre Curie.",
+  97:"Sintetizado na Universidade de Berkeley — de onde vem o nome.",
+  98:"Um dos metais mais caros; usado para detectar ouro e prata em amostras minerais.",
+  99:"Nome homenageia Albert Einstein.",
+  100:"Homenageia o físico Enrico Fermi.",
+  101:"Nome homenageia Dmitri Mendeleev, pai da tabela periódica.",
+  102:"Homenageia Alfred Nobel, inventor da dinamite e criador do prêmio Nobel.",
+  103:"Meia-vida de poucos segundos; sem aplicação fora da pesquisa acadêmica.",
+};
+for(let z=104;z<=118;z++) CURIOSIDADES[z]="Elemento sintético superpesado com meia-vida de milissegundos. Estudado exclusivamente em física nuclear.";
+
+const elementosBase=[
+  {numero:1,simbolo:"H",nome:"Hidrogênio",grupo:1,periodo:1,cat:"Não-metal",obtencao:"Via reforma a vapor do gás natural ou eletrólise da água."},
+  {numero:2,simbolo:"He",nome:"Hélio",grupo:18,periodo:1,cat:"Gás nobre",obtencao:"Extraído como subproduto do gás natural após decaimento radioativo."},
+  {numero:3,simbolo:"Li",nome:"Lítio",grupo:1,periodo:2,cat:"Metal alcalino",obtencao:"De salmouras em lagos salgados e do mineral espodumena."},
+  {numero:4,simbolo:"Be",nome:"Berílio",grupo:2,periodo:2,cat:"Metal alcalino-terroso",obtencao:"Do mineral berilo (inclui esmeralda e água-marinha)."},
+  {numero:5,simbolo:"B",nome:"Boro",grupo:13,periodo:2,cat:"Semimetal",obtencao:"Minerado como bórax ou kernita em regiões desérticas."},
+  {numero:6,simbolo:"C",nome:"Carbono",grupo:14,periodo:2,cat:"Não-metal",obtencao:"Puro como grafite, diamante ou carvão; também do petróleo."},
+  {numero:7,simbolo:"N",nome:"Nitrogênio",grupo:15,periodo:2,cat:"Não-metal",obtencao:"Destilação fracionada do ar líquido."},
+  {numero:8,simbolo:"O",nome:"Oxigênio",grupo:16,periodo:2,cat:"Não-metal",obtencao:"Destilação fracionada do ar líquido."},
+  {numero:9,simbolo:"F",nome:"Flúor",grupo:17,periodo:2,cat:"Halogênio",obtencao:"Do mineral fluorita por eletrólise de fluoretos."},
+  {numero:10,simbolo:"Ne",nome:"Neônio",grupo:18,periodo:2,cat:"Gás nobre",obtencao:"Liquefação e destilação do ar atmosférico."},
+  {numero:11,simbolo:"Na",nome:"Sódio",grupo:1,periodo:3,cat:"Metal alcalino",obtencao:"Eletrólise ígnea do NaCl fundido."},
+  {numero:12,simbolo:"Mg",nome:"Magnésio",grupo:2,periodo:3,cat:"Metal alcalino-terroso",obtencao:"Da água do mar ou de dolomita e magnesita."},
+  {numero:13,simbolo:"Al",nome:"Alumínio",grupo:13,periodo:3,cat:"Metal representativo",obtencao:"Bauxita → alumina → eletrólise (Hall-Héroult)."},
+  {numero:14,simbolo:"Si",nome:"Silício",grupo:14,periodo:3,cat:"Semimetal",obtencao:"Areia (SiO₂) + carbono em forno elétrico."},
+  {numero:15,simbolo:"P",nome:"Fósforo",grupo:15,periodo:3,cat:"Não-metal",obtencao:"Rochas fosfáticas aquecidas com sílica e carbono."},
+  {numero:16,simbolo:"S",nome:"Enxofre",grupo:16,periodo:3,cat:"Não-metal",obtencao:"Depósitos vulcânicos ou subproduto do refino de petróleo."},
+  {numero:17,simbolo:"Cl",nome:"Cloro",grupo:17,periodo:3,cat:"Halogênio",obtencao:"Eletrólise de solução de NaCl (salmoura)."},
+  {numero:18,simbolo:"Ar",nome:"Argônio",grupo:18,periodo:3,cat:"Gás nobre",obtencao:"Destilação fracionada do ar líquido."},
+  {numero:19,simbolo:"K",nome:"Potássio",grupo:1,periodo:4,cat:"Metal alcalino",obtencao:"Eletrólise de silvita fundida."},
+  {numero:20,simbolo:"Ca",nome:"Cálcio",grupo:2,periodo:4,cat:"Metal alcalino-terroso",obtencao:"Processamento de calcário e minérios de sulfato."},
+  {numero:21,simbolo:"Sc",nome:"Escândio",grupo:3,periodo:4,cat:"Metal de transição",obtencao:"Subproduto do refino de urânio e outros metais."},
+  {numero:22,simbolo:"Ti",nome:"Titânio",grupo:4,periodo:4,cat:"Metal de transição",obtencao:"Minerais rutilo e ilmenita pelo método Kroll."},
+  {numero:23,simbolo:"V",nome:"Vanádio",grupo:5,periodo:4,cat:"Metal de transição",obtencao:"Do minério de urânio ou escórias de ferro."},
+  {numero:24,simbolo:"Cr",nome:"Cromo",grupo:6,periodo:4,cat:"Metal de transição",obtencao:"Do minério cromita."},
+  {numero:25,simbolo:"Mn",nome:"Manganês",grupo:7,periodo:4,cat:"Metal de transição",obtencao:"Minério pirolusita e nódulos no fundo do oceano."},
+  {numero:26,simbolo:"Fe",nome:"Ferro",grupo:8,periodo:4,cat:"Metal de transição",obtencao:"Hematita e magnetita reduzidas com carbono em altos-fornos."},
+  {numero:27,simbolo:"Co",nome:"Cobalto",grupo:9,periodo:4,cat:"Metal de transição",obtencao:"Subproduto da mineração de níquel e cobre."},
+  {numero:28,simbolo:"Ni",nome:"Níquel",grupo:10,periodo:4,cat:"Metal de transição",obtencao:"Minérios lateríticos e sulfetados."},
+  {numero:29,simbolo:"Cu",nome:"Cobre",grupo:11,periodo:4,cat:"Metal de transição",obtencao:"Calcopirita por ustulação e eletrólise."},
+  {numero:30,simbolo:"Zn",nome:"Zinco",grupo:12,periodo:4,cat:"Metal de transição",obtencao:"Mineral esfalerita."},
+  {numero:31,simbolo:"Ga",nome:"Gálio",grupo:13,periodo:4,cat:"Metal representativo",obtencao:"Subproduto da mineração de bauxita e esfalerita."},
+  {numero:32,simbolo:"Ge",nome:"Germânio",grupo:14,periodo:4,cat:"Semimetal",obtencao:"Subproduto do refino do zinco e do carvão."},
+  {numero:33,simbolo:"As",nome:"Arsênio",grupo:15,periodo:4,cat:"Semimetal",obtencao:"Em minérios de sulfeto, subproduto do cobre."},
+  {numero:34,simbolo:"Se",nome:"Selênio",grupo:16,periodo:4,cat:"Não-metal",obtencao:"Lama anódica do refino eletrolítico do cobre."},
+  {numero:35,simbolo:"Br",nome:"Bromo",grupo:17,periodo:4,cat:"Halogênio",obtencao:"Salmouras naturais e água do Mar Morto."},
+  {numero:36,simbolo:"Kr",nome:"Criptônio",grupo:18,periodo:4,cat:"Gás nobre",obtencao:"Destilação fracionada do ar líquido."},
+  {numero:37,simbolo:"Rb",nome:"Rubídio",grupo:1,periodo:5,cat:"Metal alcalino",obtencao:"Minerais lepidolita e polucita."},
+  {numero:38,simbolo:"Sr",nome:"Estrôncio",grupo:2,periodo:5,cat:"Metal alcalino-terroso",obtencao:"Celestita e estroncianita."},
+  {numero:39,simbolo:"Y",nome:"Ítrio",grupo:3,periodo:5,cat:"Metal de transição",obtencao:"Areias monazíticas e bastnasita."},
+  {numero:40,simbolo:"Zr",nome:"Zircônio",grupo:4,periodo:5,cat:"Metal de transição",obtencao:"Mineral zircão (silicato de zircônio)."},
+  {numero:41,simbolo:"Nb",nome:"Nióbio",grupo:5,periodo:5,cat:"Metal de transição",obtencao:"Rochas pirocloro — Brasil detém ~98% das reservas mundiais."},
+  {numero:42,simbolo:"Mo",nome:"Molibdênio",grupo:6,periodo:5,cat:"Metal de transição",obtencao:"Mineral molibdenita."},
+  {numero:43,simbolo:"Tc",nome:"Tecnécio",grupo:7,periodo:5,cat:"Metal de transição",obtencao:"Primeiro elemento produzido artificialmente; recuperado do lixo nuclear."},
+  {numero:44,simbolo:"Ru",nome:"Rutênio",grupo:8,periodo:5,cat:"Metal de transição",obtencao:"Subproduto do refino da platina."},
+  {numero:45,simbolo:"Rh",nome:"Ródio",grupo:9,periodo:5,cat:"Metal de transição",obtencao:"Minérios de platina e níquel/cobre."},
+  {numero:46,simbolo:"Pd",nome:"Paládio",grupo:10,periodo:5,cat:"Metal de transição",obtencao:"Com platina e níquel na Rússia e África do Sul."},
+  {numero:47,simbolo:"Ag",nome:"Prata",grupo:11,periodo:5,cat:"Metal de transição",obtencao:"Pura ou como subproduto do Cu, Pb e Zn."},
+  {numero:48,simbolo:"Cd",nome:"Cádmio",grupo:12,periodo:5,cat:"Metal de transição",obtencao:"Subproduto do refino do zinco."},
+  {numero:49,simbolo:"In",nome:"Índio",grupo:13,periodo:5,cat:"Metal representativo",obtencao:"Resíduos do refino de zinco."},
+  {numero:50,simbolo:"Sn",nome:"Estanho",grupo:14,periodo:5,cat:"Metal representativo",obtencao:"Mineral cassiterita."},
+  {numero:51,simbolo:"Sb",nome:"Antimônio",grupo:15,periodo:5,cat:"Semimetal",obtencao:"Estibina (sulfeto de antimônio)."},
+  {numero:52,simbolo:"Te",nome:"Telúrio",grupo:16,periodo:5,cat:"Semimetal",obtencao:"Subproduto do refino do cobre."},
+  {numero:53,simbolo:"I",nome:"Iodo",grupo:17,periodo:5,cat:"Halogênio",obtencao:"Salmouras naturais ou cinzas de algas marinhas."},
+  {numero:54,simbolo:"Xe",nome:"Xenônio",grupo:18,periodo:5,cat:"Gás nobre",obtencao:"Resíduo liquefeito da destilação do ar."},
+  {numero:55,simbolo:"Cs",nome:"Césio",grupo:1,periodo:6,cat:"Metal alcalino",obtencao:"Mineral polucita."},
+  {numero:56,simbolo:"Ba",nome:"Bário",grupo:2,periodo:6,cat:"Metal alcalino-terroso",obtencao:"Sulfato de bário (barita)."},
+  {numero:72,simbolo:"Hf",nome:"Háfnio",grupo:4,periodo:6,cat:"Metal de transição",obtencao:"Sempre em minérios de zircônio; separação química complexa."},
+  {numero:73,simbolo:"Ta",nome:"Tântalo",grupo:5,periodo:6,cat:"Metal de transição",obtencao:"Coltan no Congo e no Brasil."},
+  {numero:74,simbolo:"W",nome:"Tungstênio",grupo:6,periodo:6,cat:"Metal de transição",obtencao:"Volframita e scheelita."},
+  {numero:75,simbolo:"Re",nome:"Rênio",grupo:7,periodo:6,cat:"Metal de transição",obtencao:"Poeiras do processamento de molibdênio."},
+  {numero:76,simbolo:"Os",nome:"Ósmio",grupo:8,periodo:6,cat:"Metal de transição",obtencao:"Subproduto do refino de Ni e Pt."},
+  {numero:77,simbolo:"Ir",nome:"Irídio",grupo:9,periodo:6,cat:"Metal de transição",obtencao:"Com platina ou subprodutos de meteoritos antigos."},
+  {numero:78,simbolo:"Pt",nome:"Platina",grupo:10,periodo:6,cat:"Metal de transição",obtencao:"Livre na natureza; minérios da África do Sul e Rússia."},
+  {numero:79,simbolo:"Au",nome:"Ouro",grupo:11,periodo:6,cat:"Metal de transição",obtencao:"Pepitas puras; extração moderna com cianeto."},
+  {numero:80,simbolo:"Hg",nome:"Mercúrio",grupo:12,periodo:6,cat:"Metal de transição",obtencao:"Aquecimento do cinábrio (HgS) e condensação do vapor."},
+  {numero:81,simbolo:"Tl",nome:"Tálio",grupo:13,periodo:6,cat:"Metal representativo",obtencao:"Chaminés de fundição de Pb, Zn e Cu."},
+  {numero:82,simbolo:"Pb",nome:"Chumbo",grupo:14,periodo:6,cat:"Metal representativo",obtencao:"Mineral galena (PbS)."},
+  {numero:83,simbolo:"Bi",nome:"Bismuto",grupo:15,periodo:6,cat:"Metal representativo",obtencao:"Subproduto do refino de Pb e Cu."},
+  {numero:84,simbolo:"Po",nome:"Polônio",grupo:16,periodo:6,cat:"Metal representativo",obtencao:"Traços no minério de urânio; sintetizado em reatores."},
+  {numero:85,simbolo:"At",nome:"Ástato",grupo:17,periodo:6,cat:"Halogênio",obtencao:"Bismuto bombardeado com partículas alfa."},
+  {numero:86,simbolo:"Rn",nome:"Radônio",grupo:18,periodo:6,cat:"Gás nobre",obtencao:"Decaimento de urânio e rádio nas rochas do subsolo."},
+  {numero:87,simbolo:"Fr",nome:"Frâncio",grupo:1,periodo:7,cat:"Metal alcalino",obtencao:"Decaimento do actínio; quantidades invisíveis em aceleradores."},
+  {numero:88,simbolo:"Ra",nome:"Rádio",grupo:2,periodo:7,cat:"Metal alcalino-terroso",obtencao:"Extraído de minérios de urânio; hoje do lixo nuclear."},
+  {numero:104,simbolo:"Rf",nome:"Rutherfórdio",grupo:4,periodo:7,cat:"Metal de transição",obtencao:"Sintetizado em aceleradores de partículas."},
+  {numero:105,simbolo:"Db",nome:"Dúbnio",grupo:5,periodo:7,cat:"Metal de transição",obtencao:"Fusão nuclear de elementos mais leves."},
+  {numero:106,simbolo:"Sg",nome:"Seabórgio",grupo:6,periodo:7,cat:"Metal de transição",obtencao:"Califórnio bombardeado com íons de oxigênio."},
+  {numero:107,simbolo:"Bh",nome:"Bóhrio",grupo:7,periodo:7,cat:"Metal de transição",obtencao:"Laboratórios de física de alta energia."},
+  {numero:108,simbolo:"Hs",nome:"Hássio",grupo:8,periodo:7,cat:"Metal de transição",obtencao:"Fusão de chumbo com ferro."},
+  {numero:109,simbolo:"Mt",nome:"Meitnério",grupo:9,periodo:7,cat:"Metal de transição",obtencao:"Bismuto bombardeado com núcleos de ferro."},
+  {numero:110,simbolo:"Ds",nome:"Darmstádtio",grupo:10,periodo:7,cat:"Metal de transição",obtencao:"Fusão de isótopos de chumbo e níquel."},
+  {numero:111,simbolo:"Rg",nome:"Roentgênio",grupo:11,periodo:7,cat:"Metal de transição",obtencao:"Fusão de bismuto com níquel."},
+  {numero:112,simbolo:"Cn",nome:"Copernício",grupo:12,periodo:7,cat:"Metal de transição",obtencao:"Chumbo bombardeado por zinco em acelerador."},
+  {numero:113,simbolo:"Nh",nome:"Nihônio",grupo:13,periodo:7,cat:"Metal representativo",obtencao:"Fusão a frio de íons de zinco com bismuto."},
+  {numero:114,simbolo:"Fl",nome:"Fleróvio",grupo:14,periodo:7,cat:"Metal representativo",obtencao:"Plutônio colidido com cálcio."},
+  {numero:115,simbolo:"Mc",nome:"Moscóvio",grupo:15,periodo:7,cat:"Metal representativo",obtencao:"Amerício colidido com cálcio."},
+  {numero:116,simbolo:"Lv",nome:"Livermório",grupo:16,periodo:7,cat:"Metal representativo",obtencao:"Fusão nuclear de cúrio com cálcio."},
+  {numero:117,simbolo:"Ts",nome:"Tenessino",grupo:17,periodo:7,cat:"Halogênio",obtencao:"Berquélio bombardeado com cálcio."},
+  {numero:118,simbolo:"Og",nome:"Oganessônio",grupo:18,periodo:7,cat:"Gás nobre",obtencao:"Califórnio colidido com cálcio."},
+];
+const lantanideos=[
+  {numero:57,simbolo:"La",nome:"Lantânio",grupo:4,cat:"Lantanídeo",obtencao:"Areias ricas em monazita."},
+  {numero:58,simbolo:"Ce",nome:"Cério",grupo:5,cat:"Lantanídeo",obtencao:"Minerais bastnasita."},
+  {numero:59,simbolo:"Pr",nome:"Praseodímio",grupo:6,cat:"Lantanídeo",obtencao:"Troca iônica de minérios de terras raras."},
+  {numero:60,simbolo:"Nd",nome:"Neodímio",grupo:7,cat:"Lantanídeo",obtencao:"Processamento de terras raras."},
+  {numero:61,simbolo:"Pm",nome:"Promécio",grupo:8,cat:"Lantanídeo",obtencao:"Subproduto da fissão do urânio em reatores."},
+  {numero:62,simbolo:"Sm",nome:"Samário",grupo:9,cat:"Lantanídeo",obtencao:"Monazita e bastnasita."},
+  {numero:63,simbolo:"Eu",nome:"Európio",grupo:10,cat:"Lantanídeo",obtencao:"Areias monazíticas."},
+  {numero:64,simbolo:"Gd",nome:"Gadolínio",grupo:11,cat:"Lantanídeo",obtencao:"Gadolinita e outros minerais raros."},
+  {numero:65,simbolo:"Tb",nome:"Térbio",grupo:12,cat:"Lantanídeo",obtencao:"Terras raras pesadas."},
+  {numero:66,simbolo:"Dy",nome:"Disprósio",grupo:13,cat:"Lantanídeo",obtencao:"Subproduto do refino de outras terras raras."},
+  {numero:67,simbolo:"Ho",nome:"Hólmio",grupo:14,cat:"Lantanídeo",obtencao:"Troca iônica de minerais."},
+  {numero:68,simbolo:"Er",nome:"Érbio",grupo:15,cat:"Lantanídeo",obtencao:"Areias e minerais de terras raras."},
+  {numero:69,simbolo:"Tm",nome:"Túlio",grupo:16,cat:"Lantanídeo",obtencao:"Mineral monazita."},
+  {numero:70,simbolo:"Yb",nome:"Itérbio",grupo:17,cat:"Lantanídeo",obtencao:"Processos industriais a partir da monazita."},
+  {numero:71,simbolo:"Lu",nome:"Lutécio",grupo:18,cat:"Lantanídeo",obtencao:"A terra rara mais difícil e cara de isolar."},
+];
+const actinideos=[
+  {numero:89,simbolo:"Ac",nome:"Actínio",grupo:4,cat:"Actinídeo",obtencao:"Ra-226 bombardeado com nêutrons."},
+  {numero:90,simbolo:"Th",nome:"Tório",grupo:5,cat:"Actinídeo",obtencao:"Mineral monazita."},
+  {numero:91,simbolo:"Pa",nome:"Protactínio",grupo:6,cat:"Actinídeo",obtencao:"Traços do lixo do refino de urânio."},
+  {numero:92,simbolo:"U",nome:"Urânio",grupo:7,cat:"Actinídeo",obtencao:"Pechblenda ou uraninita."},
+  {numero:93,simbolo:"Np",nome:"Netúnio",grupo:8,cat:"Actinídeo",obtencao:"Subproduto de reatores nucleares de urânio."},
+  {numero:94,simbolo:"Pu",nome:"Plutônio",grupo:9,cat:"Actinídeo",obtencao:"U-238 bombardeado com nêutrons em reatores."},
+  {numero:95,simbolo:"Am",nome:"Amerício",grupo:10,cat:"Actinídeo",obtencao:"Plutônio bombardeado com nêutrons."},
+  {numero:96,simbolo:"Cm",nome:"Cúrio",grupo:11,cat:"Actinídeo",obtencao:"Plutônio bombardeado com partículas alfa."},
+  {numero:97,simbolo:"Bk",nome:"Berquélio",grupo:12,cat:"Actinídeo",obtencao:"Amerício irradiado artificialmente."},
+  {numero:98,simbolo:"Cf",nome:"Califórnio",grupo:13,cat:"Actinídeo",obtencao:"Cúrio-242 bombardeado com núcleos de hélio."},
+  {numero:99,simbolo:"Es",nome:"Einstênio",grupo:14,cat:"Actinídeo",obtencao:"Destroços da 1ª bomba de hidrogênio (1952)."},
+  {numero:100,simbolo:"Fm",nome:"Férmio",grupo:15,cat:"Actinídeo",obtencao:"Poeira da 1ª explosão de teste da bomba H."},
+  {numero:101,simbolo:"Md",nome:"Mendelévio",grupo:16,cat:"Actinídeo",obtencao:"Einstênio bombardeado no cíclotron."},
+  {numero:102,simbolo:"No",nome:"Nobélio",grupo:17,cat:"Actinídeo",obtencao:"Isótopos de cúrio bombardeados com carbono."},
+  {numero:103,simbolo:"Lr",nome:"Laurêncio",grupo:18,cat:"Actinídeo",obtencao:"Califórnio bombardeado com boro."},
+];
+
+// ===== ESTADO =====
+let estadoSeries={lantanideos:false,actinideos:false};
+let elementoAtivo=null,divAtiva=null,filtroCategoria=null,filtroEstado=null;
+const botoesToggle={};
+const posicaoMap={};
+
+// ===== MODAL =====
+const modalOverlay = document.getElementById('modalOverlay');
+const btnClose     = document.getElementById('btnClose');
+
+function abrirModal(el,divEl){
+  const est = ESTADO[el.numero]||'?';
+  const cc  = CAT_COLOR[el.cat]||'#444';
+
+  // Toggle — clicar duas vezes fecha
+  if(elementoAtivo===el.numero){fecharModal();return;}
+  if(divAtiva) divAtiva.classList.remove('selected');
+  elementoAtivo=el.numero; divAtiva=divEl;
+  divEl.classList.add('selected');
+
+  // Cabeçalho
+  const sym = document.getElementById('modalSymbol');
+  sym.textContent = el.simbolo; sym.style.color = cc;
+  document.getElementById('modalNumber').textContent = '#'+el.numero;
+  const nm = document.getElementById('modalName');
+  nm.textContent = el.nome; nm.style.color = cc;
+  document.getElementById('modalMass').textContent = 'Massa: '+(MASSA[el.numero]||'—')+' u';
+  const familia = FAMILIA[el.grupo]||'—';
+  const periodo = (el.periodo||0)<=7 ? el.periodo : (el.cat==='Lantanídeo'?6:7);
+  document.getElementById('modalMeta').textContent = 'Família '+familia+' · Período '+periodo+' · '+el.cat;
+
+  // Badge estado
+  const estCol = ESTADO_COLOR[est];
+  document.getElementById('modalBadges').innerHTML =
+    `<span class="badge" style="background:${estCol}22;color:${estCol};border-color:${estCol}55">${ESTADO_DOT[est]} ${ESTADO_LABEL[est]}</span>`+
+    `<span class="badge" style="background:${cc}22;color:${cc};border-color:${cc}55">${el.cat}</span>`;
+
+  // Estado + partículas
+  document.getElementById('stateCard').style.borderLeftColor = estCol;
+  document.getElementById('modalState').textContent = ESTADO_DESC[est];
+  const Z=el.numero, N=calcNeutrons(Z);
+  document.getElementById('modalParticles').innerHTML =
+    `<div class="particle-box"><span class="pval" style="color:#f39c12">${Z}</span><span class="plabel">Prótons</span></div>`+
+    `<div class="particle-box"><span class="pval" style="color:#9b59b6">${N}</span><span class="plabel">Nêutrons</span></div>`+
+    `<div class="particle-box"><span class="pval" style="color:#3498db">${Z}</span><span class="plabel">Elétrons</span></div>`;
+
+  // Config eletrônica
+  document.getElementById('modalConfig').innerHTML = renderConfig(Z);
+  document.getElementById('modalObtencao').textContent   = el.obtencao||'—';
+  document.getElementById('modalCuriosidade').textContent= CURIOSIDADES[el.numero]||'—';
+
+  // Abre Modal
+  modalOverlay.classList.add('aberto');
+  modalOverlay.setAttribute('aria-hidden','false');
+  anunciar(`${el.nome}, número atômico ${Z}, ${el.cat}, ${ESTADO_LABEL[est]}.`);
+
+}
+
+function fecharModal(){
+  modalOverlay.classList.remove('aberto');
+  modalOverlay.setAttribute('aria-hidden','true');
+  if(divAtiva){divAtiva.classList.remove('selected');divAtiva.focus();}
+  elementoAtivo=null; divAtiva=null;
+  anunciar('Painel fechado.');
+}
+
+btnClose.addEventListener('click',fecharModal);
+modalOverlay.addEventListener('click',(e)=>{if(e.target===modalOverlay)fecharModal();});
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='Escape'&&modalOverlay.classList.contains('aberto'))fecharModal();
+});
+modalOverlay.addEventListener('keydown',(e)=>{
+  if(e.key!=='Tab') return;
+  const focusables = modalOverlay.querySelectorAll('button,[tabindex="0"],[href],input,select,textarea');
+  const first=focusables[0], last=focusables[focusables.length-1];
+  if(e.shiftKey){if(document.activeElement===first){e.preventDefault();last.focus();}}
+  else{if(document.activeElement===last){e.preventDefault();first.focus();}}
+});
+
+// ===== CONFIG ELETRÔNICA =====
+function renderConfig(Z){
+  const dist=distribuirEletrons(Z);
+  const camadas=porCamada(dist);
+  const notacao=CONFIG_EC[Z]||'Dados não disponíveis';
+  let html=`<div class="ec-title">Notação eletrônica</div>
+<div class="ec-full">${notacao}</div>
+<div class="ec-title" style="margin-top:5px">Por camada (Diagrama de Pauling)</div>
+<div class="ec-camadas">`;
+  const nMax=Object.keys(camadas).length;
+  for(let n=1;n<=nMax;n++){
+    const nome=CAMADAS_NOME[n-1]||'?';
+    const subs=camadas[n]||[];
+    const orbs=subs.map(({sub,e})=>{
+      const tipo=sub[1];
+      const col={s:'var(--c-solid)',p:'var(--c-gas)',d:'var(--c-transition)',f:'var(--c-lanthanide)'}[tipo]||'#aaa';
+      const exp=String(e).split('').map(d=>'\u2070\u00B9\u00B2\u00B3\u2074\u2075\u2076\u2077\u2078\u2079'[parseInt(d)]).join('');
+      return `<span class="ec-orbital" style="color:${col}">${sub}${exp}</span>`;
+    }).join(' ');
+    html+=`<div class="ec-row"><span class="ec-camada-name">${nome}</span><div class="ec-orbitals">${orbs}</div></div>`;
+  }
+  html+='</div>';
+  return html;
+}
+
+// ===== SÉRIES =====
+function abrirSerie(s){
+  estadoSeries[s]=true;
+  const l=document.getElementById(`linha-${s}`);
+  if(l) l.classList.remove('recolhida');
+  if(botoesToggle[s]){botoesToggle[s].classList.add('aberta');botoesToggle[s].setAttribute('aria-expanded','true');}
+}
+function fecharSerie(s){
+  estadoSeries[s]=false;
+  const l=document.getElementById(`linha-${s}`);
+  if(l) l.classList.add('recolhida');
+  if(botoesToggle[s]){botoesToggle[s].classList.remove('aberta');botoesToggle[s].setAttribute('aria-expanded','false');}
+}
+
+// ===== FILTROS =====
+function aplicarDim(){
+  document.querySelectorAll('.element[data-cat]').forEach(e=>{
+    const Z=parseInt(e.dataset.z)||0;
+    const est=ESTADO[Z]||'?';
+    const catOk=!filtroCategoria||e.dataset.cat===filtroCategoria;
+    const estOk=!filtroEstado||est===filtroEstado;
+    const visivel=catOk&&estOk;
+    e.classList.toggle('dim',!visivel);
+    e.setAttribute('aria-hidden',String(!visivel));
+  });
+  if(filtroEstado||filtroCategoria){
+    const laMatch=lantanideos.some(el=>{
+      const est=ESTADO[el.numero]||'?';
+      return(!filtroCategoria||el.cat===filtroCategoria)&&(!filtroEstado||est===filtroEstado);
+    });
+    const acMatch=actinideos.some(el=>{
+      const est=ESTADO[el.numero]||'?';
+      return(!filtroCategoria||el.cat===filtroCategoria)&&(!filtroEstado||est===filtroEstado);
+    });
+    if(laMatch&&!estadoSeries.lantanideos) abrirSerie('lantanideos');
+    if(!laMatch&&estadoSeries.lantanideos) fecharSerie('lantanideos');
+    if(acMatch&&!estadoSeries.actinideos) abrirSerie('actinideos');
+    if(!acMatch&&estadoSeries.actinideos) fecharSerie('actinideos');
+  } else {
+    fecharSerie('lantanideos');
+    fecharSerie('actinideos');
+  }
+}
+
+function aplicarFiltroCat(cat){
+  filtroCategoria = filtroCategoria===cat ? null : cat;
+  document.querySelectorAll('.legend-item[data-cat]').forEach(b=>{
+    const ativo = b.dataset.cat===filtroCategoria;
+    b.classList.toggle('ativo', ativo);
+    b.setAttribute('aria-pressed', String(ativo));
+    if(ativo){
+      b.style.setProperty('--item-color', CAT_COLOR[b.dataset.cat]||'var(--accent)');
+    } else {
+      b.style.removeProperty('--item-color');
+    }
+  });
+  aplicarDim();
+  anunciar(filtroCategoria?`Filtro: ${filtroCategoria}`:'Filtro de categoria removido');
+}
+
+function aplicarFiltroEstado(est){
+  filtroEstado = filtroEstado===est ? null : est;
+  const ESTADO_COLORS_FILTER={S:'var(--c-solid)',L:'var(--c-liquid)',G:'var(--c-gas)','?':'var(--c-unknown)'};
+  document.querySelectorAll('.legend-item[data-est]').forEach(b=>{
+    const ativo = b.dataset.est===filtroEstado;
+    b.classList.toggle('ativo', ativo);
+    b.setAttribute('aria-pressed', String(ativo));
+    if(ativo){
+      b.style.setProperty('--item-color', ESTADO_COLORS_FILTER[b.dataset.est]||'var(--accent)');
+    } else {
+      b.style.removeProperty('--item-color');
+    }
+  });
+  aplicarDim();
+  anunciar(filtroEstado?`Filtro: ${ESTADO_LABEL[filtroEstado]}`:'Filtro de estado removido');
+}
+
+// ===== NAVEGAÇÃO POR TECLADO =====
+function registrarPosicao(el,div){
+  const key=`${el.periodo||0}_${el.grupo}`;
+  if(!posicaoMap[key]) posicaoMap[key]=[];
+  posicaoMap[key].push({el,div});
+}
+function encontrarVizinho(grupo,periodo){
+  const key=`${periodo}_${grupo}`;
+  const lista=posicaoMap[key];
+  return lista&&lista.length?lista[0].div:null;
+}
+function navegarTabela(e,divAtual){
+  const g=parseInt(divAtual.dataset.grupo)||0;
+  const p=parseInt(divAtual.dataset.periodo)||0;
+  let alvo=null;
+  if(e.key==='ArrowRight') alvo=encontrarVizinho(g+1,p)||encontrarVizinho(g+2,p)||encontrarVizinho(g+3,p);
+  if(e.key==='ArrowLeft')  alvo=encontrarVizinho(g-1,p)||encontrarVizinho(g-2,p)||encontrarVizinho(g-3,p);
+  if(e.key==='ArrowDown')  alvo=encontrarVizinho(g,p+1)||encontrarVizinho(g,p+2);
+  if(e.key==='ArrowUp')    alvo=encontrarVizinho(g,p-1)||encontrarVizinho(g,p-2);
+  if(alvo){e.preventDefault();alvo.focus();}
+}
+
+// ===== CRIAÇÃO DOS ELEMENTOS =====
+function criarEl(el){
+  const div=document.createElement('div');
+  div.className='element';
+  div.dataset.cat=el.cat;
+  div.dataset.z=el.numero;
+  div.dataset.grupo=el.grupo;
+  div.dataset.periodo=el.periodo||0;
+  const est=ESTADO[el.numero]||'?';
+  const cc=CAT_COLOR[el.cat]||'#444';
+  div.style.setProperty('--cat-color',cc);
+  div.setAttribute('role','gridcell');
+  div.setAttribute('tabindex','0');
+  div.setAttribute('aria-label',
+    `${el.nome}, símbolo ${el.simbolo}, nº ${el.numero}, ${el.cat}, ${ESTADO_LABEL[est]}, grupo ${el.grupo}${el.periodo?', período '+el.periodo:''}`
+  );
+  div.innerHTML=
+    `<div class="el-number" aria-hidden="true">${el.numero}</div>`+
+    `<div class="el-symbol" style="color:${cc}" aria-hidden="true">${el.simbolo}</div>`+
+    `<div class="el-name" aria-hidden="true">${el.nome}</div>`+
+    `<div class="state-dot" aria-hidden="true">${ESTADO_DOT[est]}</div>`;
+  div.addEventListener('click',()=>abrirModal(el,div));
+  div.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();abrirModal(el,div);}
+    navegarTabela(e,div);
+  });
+  registrarPosicao(el,div);
+  return div;
+}
+
+// ===== LEGENDAS =====
+function criarLegendaDemo(){
+  const cell=document.createElement('div');
+  cell.className='legend-demo-cell';
+  cell.style.gridColumn='4/7';
+  cell.style.gridRow='2/5';
+  cell.setAttribute('role','note');
+  cell.setAttribute('aria-label','Guia de leitura do cartão: número atômico, símbolo, nome e estado físico.');
+  cell.innerHTML=`
+    <div class="demo-card-wrap">
+      <div class="demo-card" aria-hidden="true">
+        <div class="d-num">79</div>
+        <div class="d-sym">Au</div>
+        <div class="d-name">Ouro</div>
+        <div class="d-dot">🧊</div>
+      </div>
+      <div class="demo-labels" aria-hidden="true">
+        <span>Nº atômico → <b>79</b></span>
+        <span>Símbolo → <b>Au</b></span>
+        <span>Nome → <b>Ouro</b></span>
+        <span>Estado (25°C) → <b>🧊</b></span>
+        <span>Categoria → <span class="demo-lbar"></span></span>
+      </div>
+    </div>`;
+  return cell;
+}
+
+function criarLegendaCatsEstados(){
+  const cell=document.createElement('div');
+  cell.className='legend-cats-cell';
+  cell.style.gridColumn='7/13';
+  cell.style.gridRow='2/5';
+  cell.setAttribute('role','group');
+  cell.setAttribute('aria-label','Filtros de categoria e estado físico');
+
+  // Label Categorias
+  const lc=document.createElement('div');
+  lc.className='legend-section-label';lc.id='lblCats';lc.textContent='Categorias';
+  cell.appendChild(lc);
+
+  // Grid categorias
+  const grid=document.createElement('div');
+  grid.className='legend-cats';
+  grid.setAttribute('role','group');grid.setAttribute('aria-labelledby','lblCats');
+  Object.keys(CAT_COLOR).forEach(cat=>{
+    const cor=CAT_COLOR[cat];
+    const item=document.createElement('button');
+    item.className='legend-item';
+    item.dataset.cat=cat;
+    item.setAttribute('aria-pressed','false');
+    item.setAttribute('aria-label',`Filtrar: ${cat}`);
+    item.innerHTML=`<div class="legend-dot" aria-hidden="true" style="background:${cor}"></div><span>${cat}</span>`;
+    item.addEventListener('click',()=>aplicarFiltroCat(cat));
+    grid.appendChild(item);
+  });
+  cell.appendChild(grid);
+
+  // Divisor
+  const dv=document.createElement('div');dv.className='legend-divider';cell.appendChild(dv);
+
+  // Label Estados
+  const le=document.createElement('div');
+  le.className='legend-section-label';le.id='lblStates';le.textContent='Estado Físico (25°C · 1 atm)';
+  cell.appendChild(le);
+
+  // Grid estados
+  const gridEst=document.createElement('div');
+  gridEst.className='legend-states';
+  gridEst.setAttribute('role','group');gridEst.setAttribute('aria-labelledby','lblStates');
+  [{k:'S',label:'Sólido',emoji:'🧊',col:'var(--c-solid)'},
+   {k:'L',label:'Líquido',emoji:'💧',col:'var(--c-liquid)'},
+   {k:'G',label:'Gasoso',emoji:'💨',col:'var(--c-gas)'},
+   {k:'?',label:'Desconhecido',emoji:'🌀',col:'var(--c-unknown)'}
+  ].forEach(({k,label,emoji})=>{
+    const item=document.createElement('button');
+    item.className='legend-item';
+    item.dataset.est=k;
+    item.setAttribute('aria-pressed','false');
+    item.setAttribute('aria-label',`Filtrar: ${label}`);
+    item.innerHTML=`<span aria-hidden="true" style="font-size:1.1rem">${emoji}</span><span>${label}</span>`;
+    item.addEventListener('click',()=>aplicarFiltroEstado(k));
+    gridEst.appendChild(item);
+  });
+  cell.appendChild(gridEst);
+  return cell;
+}
+
+// ===== RÓTULOS =====
+function criarRotulos(c){
+  for(let g=1;g<=18;g++){
+    const d=document.createElement('div');d.className='family-label';
+    d.style.cssText=`grid-column:${g+1};grid-row:1;`;
+    d.textContent=g;d.setAttribute('aria-label',`Grupo ${g}`);
+    c.appendChild(d);
+  }
+  for(let p=1;p<=7;p++){
+    const d=document.createElement('div');d.className='period-label';
+    d.style.cssText=`grid-column:1;grid-row:${p+2};`;
+    d.textContent=p;d.setAttribute('aria-label',`Período ${p}`);
+    c.appendChild(d);
+  }
+}
+
+// ===== BOTÕES SÉRIES =====
+function criarBotaoSerie(serie){
+  const cfgs={
+    lantanideos:{numero:'57-71',simbolo:'La-Lu',nome:'Lantanídeos',grupo:3,periodo:6,cat:'Lantanídeo',
+      obtencao:'Série dos lantanídeos (Z=57–71). Clique para expandir.',
+      curiosidade:'15 elementos (terras raras) usados em ímãs, lasers e fibra óptica.'},
+    actinideos:{numero:'89-103',simbolo:'Ac-Lr',nome:'Actinídeos',grupo:3,periodo:7,cat:'Actinídeo',
+      obtencao:'Série dos actinídeos (Z=89–103). Clique para expandir.',
+      curiosidade:'15 elementos, maioria radioativa; incluem urânio e plutônio.'}
+  };
+  const cfg=cfgs[serie];
+  const cc=CAT_COLOR[cfg.cat];
+  const div=document.createElement('div');
+  div.className='element serie-toggle';
+  div.dataset.cat=cfg.cat;div.dataset.z=cfg.numero;
+  div.dataset.grupo=cfg.grupo;div.dataset.periodo=cfg.periodo;
+  div.setAttribute('role','button');div.setAttribute('tabindex','0');
+  div.setAttribute('aria-expanded','false');
+  div.setAttribute('aria-label',`${serie==='lantanideos'?'Lantanídeos':'Actinídeos'} (${cfg.numero}). Enter para expandir/recolher.`);
+  div.style.cssText=`grid-column:${cfg.grupo+1};grid-row:${cfg.periodo+1};--cat-color:${cc}`;
+  div.innerHTML=
+    `<div class="el-number" aria-hidden="true" style="font-size:.38rem">${cfg.numero}</div>`+
+    `<div class="el-symbol" aria-hidden="true" style="color:${cc};font-size:.58rem;line-height:1.1">${cfg.simbolo}</div>`+
+    `<div class="el-name" aria-hidden="true">${cfg.nome}</div>`+
+    `<span class="toggle-arrow" aria-hidden="true" style="color:${cc}">&#9660;</span>`;
+  const handler=()=>{
+    abrirModal({...cfg,numero:cfg.numero,grupo:cfg.grupo},div);
+    estadoSeries[serie]=!estadoSeries[serie];
+    div.classList.toggle('aberta',estadoSeries[serie]);
+    div.setAttribute('aria-expanded',String(estadoSeries[serie]));
+    const l=document.getElementById(`linha-${serie}`);
+    if(l) l.classList.toggle('recolhida',!estadoSeries[serie]);
+    anunciar(estadoSeries[serie]?`Série expandida`:`Série recolhida`);
+  };
+  div.addEventListener('click',handler);
+  div.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();handler();}
+    navegarTabela(e,div);
+  });
+  botoesToggle[serie]=div;
+  return div;
+}
+
+function criarLinha(serie,els,row){
+  const w=document.createElement('div');
+  w.id=`linha-${serie}`;w.className='linha-serie recolhida';
+  w.setAttribute('role','row');
+  els.forEach(el=>{
+    const d=criarEl(el);
+    d.style.gridColumn=el.grupo+1;d.style.gridRow=row;
+    w.appendChild(d);
+  });
+  return w;
+}
+
+// ===== RENDER =====
+function renderizar(){
+  const c=document.getElementById('periodic-table');
+  criarRotulos(c);
+  c.appendChild(criarLegendaDemo());
+  c.appendChild(criarLegendaCatsEstados());
+  elementosBase.forEach(el=>{
+    const d=criarEl(el);d.style.gridColumn=el.grupo+1;d.style.gridRow=el.periodo+1;c.appendChild(d);
+  });
+  c.appendChild(criarBotaoSerie('lantanideos'));
+  c.appendChild(criarBotaoSerie('actinideos'));
+  const sep=document.createElement('div');
+  sep.className='serie-separator';sep.style.gridRow='9';sep.setAttribute('aria-hidden','true');
+  c.appendChild(sep);
+  c.appendChild(criarLinha('lantanideos',lantanideos,10));
+  c.appendChild(criarLinha('actinideos',actinideos,11));
+}
+renderizar();
+</script>
+</body>
+</html>
