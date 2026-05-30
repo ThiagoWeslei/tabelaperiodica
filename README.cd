@@ -1,30 +1,64 @@
-# ⚛️ Tabela Periódica Interativa & Acessível
+# ⚛️ Tabela Periódica Interativa
 
-Uma aplicação web interativa projetada para tornar o aprendizado da Química inclusivo, dinâmico e acessível para todos. Este projeto reconstrói a Tabela Periódica tradicional em uma interface digital que respeita as diretrizes de acessibilidade, permitindo que estudantes e entusiastas com diferentes capacidades explorem os elementos químicos sem barreiras.
+Uma aplicação web moderna, responsiva e de alta performance para a exploração dos elementos químicos. Desenvolvida com uma estética futurista (*dark mode* com detalhes em *neon*), a aplicação foi projetada para atuar como uma ferramenta didática tanto na introdução à química quanto no suporte ao estudo acadêmico avançado.
 
----
-## ✨ Funcionalidades Principais
-
-* **Interatividade Total:** Clique nos elementos para abrir visões detalhadas, propriedades químicas, configurações eletrônicas e históricos de descoberta.
-* **Filtros por Grupos/Famílias:** Destaque instantâneo de Metais, Ametais, Gases Nobres, Lantanídeos, Actinídeos, entre outros.
-* **Design Responsivo:** Explore a tabela perfeitamente tanto em telas de computadores quanto em tablets e smartphones.
+🔗 **Acesse a aplicação em tempo real:** [thiagoweslei.github.io/tabelaperiodica/](https://thiagoweslei.github.io/tabelaperiodica/
 
 ---
 
-## ♿ Recursos de Acessibilidade (WCAG Compliant)
+## 🚀 Recursos e Funcionalidades
 
-A acessibilidade não é um recurso adicional, é o coração deste projeto. Implementamos práticas baseadas nas diretrizes da WCAG (Web Content Accessibility Guidelines):
+O projeto foi estruturado no arquivo principal `tabela.html` e engloba os seguintes recursos:
 
-* **Navegação por Teclado Completa:** Todos os elementos e menus podem ser focados e ativados utilizando apenas as teclas `Tab`, `Shift + Tab` e `Enter/Space`.
-* **Compatibilidade com Leitores de Tela:** Uso rigoroso de semântica HTML5 e atributos **ARIA (Accessible Rich Internet Applications)** para que usuários com deficiência visual tenham a descrição exata de cada elemento e grupo selecionado.
-* **Controle de Zoom e Fontes:** Layout flexível que não quebra ao aumentar a fonte do navegador ou aplicar zoom de até 200%.
+* **Visualização Avançada da Distribuição Eletrônica:** Exibe a configuração eletrônica no estado fundamental (notação de gases nobres) e o detalhamento completo por níveis de energia (K, L, M, N, O, P, Q) baseado no Diagrama de Pauling.
+* **Conexão com a Química Orgânica e Inorgânica:** As curiosidades e descrições dos elementos destacam suas aplicações práticas reais, como reagentes de síntese orgânica (ex: reagentes de Grignard, catalisadores de Paládio, Rutênio e cromo para oxidações) e compostos inorgânicos industriais.
+* **Filtros Inteligentes por Categoria e Estado Físico:** Permite isolar instantaneamente grupos específicos (Metais de Transição, Lantanídeos, Halogênios, etc.) ou estados da matéria (Sólido, Líquido, Gasoso ou Desconhecido a 25 °C e 1 atm) ao interagir com a legenda.
+* **Painel Lateral Informativo (Sidebar):** Sistema de clique que expande informações aprofundadas sobre o elemento selecionado, incluindo:
+  * Símbolo, número atômico e massa atômica precisa.
+  * Contagem detalhada de subpartículas (Prótons, Nêutrons e Elétrons) calculadas dinamicamente.
+  * Métodos de obtenção na natureza ou em laboratório e curiosidades históricas.
+* **Séries Expansíveis (Lantanídeos e Actinídeos):** Botões integrados na estrutura principal que expandem e recolhem dinamicamente as séries de transição interna, otimizando o layout da tela.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-* **HTML5** (Semântico)
-* **CSS3 / TailwindCSS** (Para estilização flexível e modos de contraste)
-* **JavaScript (ES6+)** / *[Seu Framework aqui: ex: React / Vue / Vanilla JS]* (Manipulação dinâmica de dados e gerenciamento de estados de acessibilidade)
+A aplicação foi construída utilizando práticas modernas de desenvolvimento web focado em performance nativa (Vanilla), sem a necessidade de dependências ou frameworks pesados:
+
+* **HTML5:** Estruturação semântica de todos os blocos informativos.
+* **CSS3 (Grid & Flexbox):** Uso intensivo de CSS Grid para renderizar com precisão matemática a disposição 18x7 da tabela periódica, além de variáveis CSS para controle da paleta de cores futurista.
+* **JavaScript (ES6+):** Lógica para manipulação eficiente do DOM, renderização dinâmica dos elementos a partir de objetos estruturados, algoritmos de distribuição eletrônica e controle dos estados dos filtros.
+* **Google Fonts:** Integração das fontes de estilo tecnológico Rajdhani e Share Tech Mono.
 
 ---
+
+## 📐 Estrutura do Arquivo tabela.html
+
+O projeto é totalmente autocontido em um único arquivo chamado `tabela.html`, o qual organiza os componentes da seguinte forma:
+
+* **Estrutura de Grade:** Utiliza coordenadas estritas de linhas e colunas para posicionar os elementos base, deixando as colunas centrais livres para as legendas de orientação.
+* **Espaço Central Otimizado:** 
+  * **Colunas 4 a 6 / Linhas 2 a 5:** Abriga o Card de Demonstração (Legenda explicativa do elemento).
+  * **Colunas 7 a 13 / Linhas 2 a 4:** Painel unificado de filtros por Categorias e Estados Físicos.
+
+---
+
+## 🎨 Paleta de Cores e Identidade Visual
+
+A interface adota variáveis de cores bem definidas e ícones representativos para categorizar os estados físicos dos elementos químicos a 25 °C e 1 atm de forma intuitiva:
+
+| Estado Físico | Ícone | Amostra de Cor | Variável CSS | Descrição |
+| :--- | :---: | :---: | :--- | :--- |
+| **Sólido** | 🧊 | `🔵 #4a9eff` | `--c-solid` | Elementos em estado sólido |
+| **Líquido** | 💧 | `🔴 #ff5252` | `--c-liquid` | Elementos em estado líquido |
+| **Gasoso** | 💨 | `🟢 #69f0ae` | `--c-gas` | Elementos em estado gasoso |
+| **Desconhecido** | 🌀 | `⚪ #777777` | `--c-unknown` | Elementos sintéticos / propriedade desconhecida |
+
+### 🕶️ Cores de Interface:
+* **Fundo Principal:** `#0d0d12` (`--bg-deep`) — Estética Dark Mode profunda.
+* **Destaques e Interações:** `#00e5ff` (`--accent`) — Tom Ciano Neon para efeitos de hover e seleções ativas.
+
+## 🧑‍💻 Autor
+
+Desenvolvido por **Thiago Weslei**  
+Sinta-se à vontade para contribuir com o projeto enviando Pull Requests ou sugerindo melhorias na seção de Issues!
