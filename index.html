@@ -1354,13 +1354,20 @@ function ultimoSubnivel(Z){
   };
 }
 
-// ── Cor por bloco (s/p/d/f) ──────────────────────────────────────────────────
-function corAtomo(bloco, cc){
-  // Usa as variáveis CSS do tema atual para garantir contraste em qualquer modo
+// ── Resolve o valor hex real de uma CSS custom property no tema atual ────────
+function resolverCorCSS(cssVar){
+  // Lê o valor computado da variável no :root do documento
+  const val = getComputedStyle(document.documentElement)
+                .getPropertyValue(cssVar.replace('var(','').replace(')','').trim())
+                .trim();
+  return val || '#888';
+}
+
+// ── Cor por bloco (s/p/d/f) — retorna hex resolvido ─────────────────────────
+function corAtomo(bloco, ccHex){
   const varMap = {S:'--orb-s', P:'--orb-p', D:'--orb-d', F:'--orb-f'};
   const v = varMap[bloco];
-  if(v) return 'var('+v+')';
-  return cc || 'var(--text-dim)';
+  return v ? resolverCorCSS(v) : (ccHex || '#888');
 }
 
 // ── Propriedades físicas ligadas ao nível de preenchimento ─────────────────
@@ -1542,8 +1549,14 @@ function renderRaio(Z, el, ccHex){
     return `<p class="raio-sem-dados">Dados de raio atômico não disponíveis — elemento sintético superpesado sem medição experimental confirmada.</p>`;
   }
 
-  const atomCor  = sub ? corAtomo(sub.bloco, ccHex) : (ccHex||'#aaa');
-  const atomGlow = atomCor+'88';
+  const atomCor  = sub ? corAtomo(sub.bloco, ccHex) : (ccHex||'#888');
+  // Produz rgba válido para glow (atomCor agora é sempre hex após corAtomo())
+  const atomGlow = (()=>{
+    const h = atomCor.replace('#','');
+    if(h.length < 6) return 'rgba(136,136,136,0.5)';
+    const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},0.5)`;
+  })();
   const rPm      = dados ? dados.r   : null;
   const tipoKey  = dados ? dados.t   : null;
   const fonteKey = dados ? dados.f   : null;
@@ -1561,8 +1574,11 @@ function renderRaio(Z, el, ccHex){
     const r = RAIO[e.numero];
     if(!r) return '';
     const subE  = ultimoSubnivel(e.numero);
-    const corE  = subE ? corAtomo(subE.bloco, CAT_COLOR[e.cat]||'#aaa') : (CAT_COLOR[e.cat]||'#aaa');
-    const glowE = corE+'66';
+    const corE  = subE ? corAtomo(subE.bloco, getCatColorHex(e.cat)) : getCatColorHex(e.cat);
+    const h6    = corE.replace('#','');
+    const glowE = h6.length>=6
+      ? `rgba(${parseInt(h6.slice(0,2),16)},${parseInt(h6.slice(2,4),16)},${parseInt(h6.slice(4,6),16)},0.4)`
+      : 'rgba(136,136,136,0.4)';
     const d     = Math.round(14+(r.r/RAIO_MAX_PM)*46);
     const bord  = isAtual ? `outline:2px solid var(--accent);outline-offset:2px;` : '';
     return `<div class="raio-grade-item">
@@ -1786,6 +1802,7 @@ function abrirModal(el,divEl){
 function fecharModal(){
   modalOverlay.classList.remove('aberto');
   modalOverlay.setAttribute('aria-hidden','true');
+  document.querySelector('.modal-body').scrollTop = 0;
   if(divAtiva){divAtiva.classList.remove('selected');divAtiva.focus();}
   elementoAtivo=null;divAtiva=null;
   anunciar('Modal fechado.');
