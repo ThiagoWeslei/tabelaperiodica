@@ -129,27 +129,87 @@ body {
 
 /* ===== TOOLBAR — rodapé esquerdo, no fluxo ===== */
 .toolbar {
-  flex-shrink: 0; display: flex; align-items: center; flex-wrap: wrap;
-  gap: 4px; padding: 5px 8px 6px; justify-content: flex-start;
+  flex-shrink: 0;
+  display: flex; align-items: center; flex-wrap: nowrap;
+  gap: 3px; padding: 5px 10px 6px; justify-content: flex-start;
+  /* Tamanho completamente fixo — não herdado do font-scale */
+  font-size: 0px; /* zera herança; cada filho define o próprio */
 }
-.toolbar-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+.toolbar-sep {
+  width: 1px; height: 16px; background: var(--border);
+  margin: 0 4px; flex-shrink: 0;
+}
 .toolbar-btn {
-  background: var(--bg-card); border: 1px solid var(--border);
-  color: var(--text-dim); border-radius: 6px;
-  /* tamanho mínimo 44×44 px para toque — WCAG 2.5.5 */
-  min-width: 44px; min-height: 32px;
-  padding: 4px 10px; cursor: pointer;
-  font-size: calc(0.75rem * var(--font-scale));
-  font-family: 'Rajdhani', sans-serif; font-weight: 700;
-  letter-spacing: .04em; transition: background .15s, color .15s, border-color .15s;
-  white-space: nowrap; line-height: 1.5;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 6px;
+  height: 26px;
+  padding: 0 10px;
+  cursor: pointer;
+  /* FIXO em px — nunca varia com font-scale */
+  font-size: 12px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: .04em;
+  transition: background .15s, color .15s, border-color .15s;
+  white-space: nowrap;
+  line-height: 1;
+  display: flex; align-items: center; gap: 4px;
+  flex-shrink: 0;
 }
 .toolbar-btn:hover, .toolbar-btn:focus-visible {
   background: var(--bg-hover); color: var(--text-main);
   border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px;
 }
-.toolbar-btn[aria-pressed="true"] { background: var(--accent); color: #000; border-color: var(--accent); }
-#scaleLabel { font-size: calc(0.7rem * var(--font-scale)); color: var(--text-dim); font-family: 'Share Tech Mono', monospace; min-width: 38px; }
+.toolbar-btn[aria-pressed="true"] {
+  background: var(--accent); color: #000; border-color: var(--accent);
+}
+/* Botões A+ e A− levemente mais largos para acomodar o símbolo */
+.toolbar-btn-font {
+  min-width: 32px; justify-content: center;
+  font-size: 13px; font-weight: 900;
+}
+#scaleLabel {
+  /* Também fixo em px */
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  min-width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ===== RODAPÉ DE FONTES ===== */
+.footer-fontes {
+  flex-shrink: 0;
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 3px 12px;
+  padding: 4px 10px 5px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-deep);
+}
+.footer-fontes-titulo {
+  /* Fixo em px */
+  font-size: 10px;
+  font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--text-main);
+  white-space: nowrap; flex-shrink: 0;
+}
+.footer-fonte-item {
+  /* Fixo em px */
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  white-space: nowrap;
+}
+.footer-fonte-item b { color: var(--text-main); font-family: 'Rajdhani', sans-serif; font-weight: 700; }
+.footer-fonte-item a {
+  color: var(--accent); text-decoration: none;
+}
+.footer-fonte-item a:hover, .footer-fonte-item a:focus-visible {
+  text-decoration: underline; outline: 1px solid var(--accent); outline-offset: 2px;
+}
 
 /* ===== TABELA ===== */
 #periodic-table {
@@ -609,14 +669,25 @@ body {
 
   <!-- TOOLBAR — abaixo da tabela, alinhada à esquerda -->
   <div class="toolbar" role="toolbar" aria-label="Opções de acessibilidade">
-    <button class="toolbar-btn" id="btnTheme"    aria-pressed="false" title="Alternar modo claro/escuro">🌙 Claro</button>
+    <button class="toolbar-btn toolbar-btn-font" id="btnFontDown" aria-label="Diminuir fonte">A−</button>
+    <span id="scaleLabel" aria-live="polite" aria-label="Escala atual de fonte">100%</span>
+    <button class="toolbar-btn toolbar-btn-font" id="btnFontUp"   aria-label="Aumentar fonte">A+</button>
+    <div class="toolbar-sep" aria-hidden="true"></div>
+    <button class="toolbar-btn" id="btnTheme"    aria-pressed="false" title="Alternar modo claro/escuro">🌙 Escuro</button>
     <div class="toolbar-sep" aria-hidden="true"></div>
     <button class="toolbar-btn" id="btnContrast" aria-pressed="false" title="Alto contraste (WCAG AAA)">⬛ Contraste</button>
-    <div class="toolbar-sep" aria-hidden="true"></div>
-    <button class="toolbar-btn" id="btnFontUp"   aria-label="Aumentar fonte">A+</button>
-    <button class="toolbar-btn" id="btnFontDown" aria-label="Diminuir fonte">A−</button>
-    <span id="scaleLabel" aria-live="polite" aria-label="Escala atual de fonte">100%</span>
   </div>
+
+  <!-- RODAPÉ DE FONTES -->
+  <footer class="footer-fontes" role="contentinfo" aria-label="Fontes dos dados da tabela periódica">
+    <span class="footer-fontes-titulo">Fontes:</span>
+    <span class="footer-fonte-item"><b>Massas atômicas</b> — IUPAC Commission on Isotopic Abundances and Atomic Weights, <a href="https://www.ciaaw.org" target="_blank" rel="noopener">ciaaw.org</a> (2021)</span>
+    <span class="footer-fonte-item"><b>Raios covalentes</b> — Cordero et al., <i>Dalton Trans.</i> 2008, 2832; Pyykkö &amp; Atsumi, <i>Chem. Eur. J.</i> 15 (2009) 186</span>
+    <span class="footer-fonte-item"><b>Raios van der Waals</b> — Alvarez, <i>Dalton Trans.</i> 42 (2013) 8617</span>
+    <span class="footer-fonte-item"><b>Configurações eletrônicas</b> — NIST Atomic Spectra Database, <a href="https://physics.nist.gov/asd" target="_blank" rel="noopener">physics.nist.gov/asd</a></span>
+    <span class="footer-fonte-item"><b>Categorias e nomenclatura</b> — IUPAC Red Book (2005) &amp; <a href="https://iupac.org/what-we-do/periodic-table-of-elements/" target="_blank" rel="noopener">IUPAC Periodic Table</a> (2021)</span>
+    <span class="footer-fonte-item"><b>Elementos sintéticos (Z ≥ 104)</b> — IUPAC/IUPAP Joint Working Party, <i>Pure Appl. Chem.</i> 88 (2016) 139</span>
+  </footer>
 </div>
 
 <script>
@@ -639,7 +710,7 @@ btnTheme.addEventListener('click', () => {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   document.documentElement.setAttribute('data-theme', isLight ? '' : 'light');
   btnTheme.setAttribute('aria-pressed', String(!isLight));
-  btnTheme.textContent = isLight ? '🌙 Claro' : '☀️ Escuro';
+  btnTheme.textContent = isLight ? '🌙 Escuro' : '☀️ Claro';
   anunciar(isLight ? 'Modo escuro ativado' : 'Modo claro ativado');
 });
 
@@ -659,7 +730,7 @@ btnFontDown.addEventListener('click', () => {
 
 if (window.matchMedia && window.matchMedia('(prefers-color-scheme:light)').matches) {
   document.documentElement.setAttribute('data-theme', 'light');
-  btnTheme.textContent = '☀️ Escuro';
+  btnTheme.textContent = '☀️ Claro';
   btnTheme.setAttribute('aria-pressed', 'true');
 }
 // Respeita preferência do sistema por alto contraste
