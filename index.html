@@ -440,6 +440,33 @@ body {
 .raio-sub-titulo { font-size:calc(0.6rem * var(--font-scale)); font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-main); }
 .raio-sub-valor  { font-family:'Share Tech Mono',monospace; font-size:calc(1rem * var(--font-scale)); color:var(--accent); }
 .raio-sub-tipo   { font-size:calc(0.68rem * var(--font-scale)); color:var(--text-dim); }
+/* Badges de preenchimento da camada de valência */
+.raio-status-badge {
+  display: inline-block;
+  padding: calc(2px * var(--font-scale)) calc(9px * var(--font-scale));
+  border-radius: 99px;
+  font-size: calc(0.72rem * var(--font-scale));
+  font-weight: 700;
+  letter-spacing: .04em;
+  font-family: 'Rajdhani', sans-serif;
+  border: 1px solid;
+}
+.raio-status-preenchido {
+  color: var(--c-gas); border-color: var(--c-gas);
+  background: rgba(125,245,184,.12);
+}
+.raio-status-semipreenchido {
+  color: var(--c-transition); border-color: var(--c-transition);
+  background: rgba(245,166,35,.12);
+}
+.raio-status-parcial {
+  color: var(--c-solid); border-color: var(--c-solid);
+  background: rgba(90,171,255,.12);
+}
+.raio-status-vazio {
+  color: var(--c-unknown); border-color: var(--c-unknown);
+  background: rgba(187,187,187,.10);
+}
 
 /* ── Barra proporcional ── */
 .raio-barra-wrap { display:flex; flex-direction:column; gap:4px; }
@@ -1289,13 +1316,13 @@ const RAIO_FONTE_LABEL = {
 //   Parcialmente preenchido (partial): qualquer outra ocupação intermediária
 //   Vazio (empty):                    elCount = 0
 function classificarPreenchimento(elCount, maxEl, tipo){
-  if(elCount === 0)           return { status:'vazio',            label:'Vazio',             icon:'○' };
-  if(elCount === maxEl)       return { status:'completo',         label:'Completo',          icon:'●' };
+  if(elCount === 0)           return { status:'vazio',          label:'Vazio',                   icon:'○' };
+  if(elCount === maxEl)       return { status:'preenchido',      label:'Preenchido',              icon:'●' };
   // Semipreenchido: cada orbital do subnível tem exatamente 1 elétron (regra de Hund 1ª)
   // Número de orbitais = maxEl / 2
-  if(elCount === maxEl / 2)   return { status:'semipreenchido',   label:'Semipreenchido',    icon:'◑' };
+  if(elCount === maxEl / 2)   return { status:'semipreenchido',  label:'Semipreenchido',          icon:'◑' };
   // Qualquer outro caso: parcialmente preenchido
-  return                       { status:'parcial',               label:'Parcialmente preenchido', icon:'◔' };
+  return                       { status:'parcial',              label:'Parcialmente preenchido', icon:'◔' };
 }
 
 function ultimoSubnivel(Z){
@@ -1587,14 +1614,23 @@ function renderRaio(Z, el, ccHex){
     </div>` : '';
 
   // ── subnível ──
-  const subHtml = sub ? `
+  const subHtml = sub ? (()=>{
+    const statusClass = {
+      preenchido:    'raio-status-preenchido',
+      semipreenchido:'raio-status-semipreenchido',
+      parcial:       'raio-status-parcial',
+      vazio:         'raio-status-vazio'
+    }[sub.status] || 'raio-status-parcial';
+    return `
     <div class="raio-sub-box">
-      <span class="raio-sub-titulo">Último subnível de energia (valência)</span>
-      <span class="raio-sub-valor"
-            aria-label="Subnível ${sub.sub}: ${sub.elCount} de ${sub.maxEl} elétrons — ${sub.statusLabel}"
-      >${sub.sub} &nbsp;·&nbsp; ${sub.elCount}/${sub.maxEl} e⁻ &nbsp;·&nbsp; ${sub.statusIcon} ${sub.statusLabel}</span>
-      <span class="raio-sub-tipo">Bloco <b>${sub.bloco}</b> &nbsp;·&nbsp; Camada <b>${sub.camada}</b> (n&nbsp;=&nbsp;${sub.n}) &nbsp;·&nbsp; ${sub.numOrbitais} orbital${sub.numOrbitais>1?'is':''}</span>
-    </div>` : '';
+      <span class="raio-sub-titulo">Camada de valência — último subnível</span>
+      <span class="raio-sub-valor" aria-label="Subnível ${sub.sub}: ${sub.elCount} de ${sub.maxEl} elétrons">${sub.sub} &nbsp;·&nbsp; ${sub.elCount}/${sub.maxEl} e⁻</span>
+      <span class="raio-sub-tipo">
+        Bloco <b>${sub.bloco}</b> &nbsp;·&nbsp; Camada <b>${sub.camada}</b> (n = ${sub.n}) &nbsp;·&nbsp; ${sub.numOrbitais} orbital${sub.numOrbitais>1?'is':''}
+      </span>
+      <span class="raio-status-badge ${statusClass}" aria-label="Estado de preenchimento: ${sub.statusLabel}">${sub.statusLabel}</span>
+    </div>`;
+  })() : '';
 
   // ── barra proporcional ──
   const barraHtml = rPm ? `
@@ -1665,7 +1701,7 @@ function renderRaio(Z, el, ccHex){
         ${contHtml}
       </div>
       ${props ? `<div class="raio-tend-props">
-        <span class="raio-tend-props-titulo">Propriedades físicas — bloco ${sub.bloco} · subnível ${sub.sub} · ${sub.statusIcon} ${sub.statusLabel}</span>
+        <span class="raio-tend-props-titulo">Propriedades físicas — bloco ${sub.bloco} · subnível ${sub.sub} · ${sub.statusLabel}</span>
         ${propRows}
       </div>` : ''}
       <div class="raio-tend-tags">
