@@ -601,6 +601,101 @@ body {
 .raio-explicacao { font-size:calc(0.9rem * var(--font-scale)); line-height:1.65; color:var(--text-main); }
 .raio-explicacao b { color:var(--accent); font-weight:700; }
 .raio-tendencia { display:flex; gap:calc(6px * var(--font-scale)); flex-wrap:wrap; margin-top:2px; }
+/* ===== DIAGRAMA DE BOHR ===== */
+.bohr-wrap {
+  display: flex; flex-direction: column;
+  gap: calc(8px * var(--font-scale));
+}
+.bohr-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+}
+.bohr-titulo {
+  font-size: calc(0.65rem * var(--font-scale)); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--text-main);
+  align-self: flex-start;
+}
+.bohr-svg-wrap {
+  width: 100%; display: flex; justify-content: center;
+}
+.bohr-legenda {
+  display: flex; flex-wrap: wrap; gap: calc(6px * var(--font-scale));
+  justify-content: center;
+}
+.bohr-legenda-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: calc(0.72rem * var(--font-scale)); color: var(--text-main);
+}
+.bohr-legenda-dot {
+  width: calc(10px * var(--font-scale)); height: calc(10px * var(--font-scale));
+  border-radius: 50%; flex-shrink: 0;
+}
+.bohr-camada-info {
+  background: var(--bg-deep); border: 1px solid var(--border); border-radius: 6px;
+  padding: calc(7px * var(--font-scale)) calc(12px * var(--font-scale));
+  display: flex; flex-direction: column; gap: 3px; width: 100%;
+}
+.bohr-camada-titulo {
+  font-size: calc(0.6rem * var(--font-scale)); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--text-main);
+}
+.bohr-camada-row {
+  display: flex; align-items: center; gap: calc(8px * var(--font-scale));
+  font-size: calc(0.78rem * var(--font-scale));
+}
+.bohr-camada-nome {
+  font-family: 'Share Tech Mono', monospace; font-weight: 700;
+  color: var(--accent); min-width: calc(18px * var(--font-scale));
+}
+.bohr-camada-el {
+  font-family: 'Share Tech Mono', monospace; color: var(--text-main);
+  min-width: calc(40px * var(--font-scale));
+}
+.bohr-camada-bar-track {
+  flex: 1; height: calc(7px * var(--font-scale));
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 99px; overflow: hidden;
+}
+.bohr-camada-bar-fill {
+  height: 100%; border-radius: 99px;
+}
+.bohr-camada-val-tag {
+  font-size: calc(0.65rem * var(--font-scale)); font-weight: 700;
+  color: var(--accent); white-space: nowrap;
+}
+/* ── Lewis ── */
+.lewis-wrap {
+  display: flex; flex-direction: column;
+  gap: calc(8px * var(--font-scale));
+}
+.lewis-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+}
+.lewis-titulo {
+  font-size: calc(0.65rem * var(--font-scale)); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--text-main);
+}
+.lewis-svg-wrap {
+  display: flex; justify-content: center;
+}
+.lewis-legenda {
+  background: var(--bg-deep); border: 1px solid var(--border); border-radius: 6px;
+  padding: calc(7px * var(--font-scale)) calc(12px * var(--font-scale));
+  display: flex; flex-direction: column; gap: calc(4px * var(--font-scale));
+}
+.lewis-legenda-titulo {
+  font-size: calc(0.6rem * var(--font-scale)); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--text-main);
+}
+.lewis-legenda-row {
+  display: flex; align-items: center; gap: calc(8px * var(--font-scale));
+  font-size: calc(0.78rem * var(--font-scale)); color: var(--text-main);
+}
+.lewis-legenda-dot {
+  width: calc(8px * var(--font-scale)); height: calc(8px * var(--font-scale));
+  border-radius: 50%; flex-shrink: 0;
+}
+
 /* ===== FOCO GLOBAL ===== */
 :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 
@@ -1737,11 +1832,15 @@ function renderRaio(Z, el, ccHex){
         <button class="raio-vbtn ativo" id="rbtn-dados-${Z}" aria-pressed="true"
                 onclick="raioVista('dados','${Z}',this)">Dados</button>
         <button class="raio-vbtn" id="rbtn-grade-${Z}" aria-pressed="false"
-                onclick="raioVista('grade','${Z}',this)">Grade periódica</button>
+                onclick="raioVista('grade','${Z}',this)">Grade</button>
+        <button class="raio-vbtn" id="rbtn-bohr-${Z}" aria-pressed="false"
+                onclick="raioVista('bohr','${Z}',this)">Bohr</button>
+        <button class="raio-vbtn" id="rbtn-lewis-${Z}" aria-pressed="false"
+                onclick="raioVista('lewis','${Z}',this)">Lewis</button>
       </div>
     </div>`;
 
-  // ── paineis dados / grade ──
+  // ── paineis dados / grade / bohr ──
   const painelDadosHtml=`
     <div id="raio-painel-dados-${Z}">
       <div class="raio-visual">${circuloHtml}<div class="raio-info-col">${valorHtml}</div></div>
@@ -1755,72 +1854,409 @@ function renderRaio(Z, el, ccHex){
       ${gradeHtml}
     </div>`;
 
-  // ── tendências periódicas (com propriedades físicas) ──
-  const tend   = tendenciaRaio(Z, el, sub);
-  const props  = propsSubnivel(Z, el, sub);
-  let tendHtml = '';
-  if(sub){
-    const propRows = props ? [
-      ['Condutividade',  props.condutiv],
-      ['Magnetismo',     props.magnet],
-      ['Reatividade',    props.ativid],
-      ['Tipo de ligação',props.ligacao],
-    ].map(([lbl,val])=>`<div class="raio-prop-row"><span class="raio-prop-label">${lbl}</span><span class="raio-prop-val">${val}</span></div>`).join('') : '';
-
-    const contHtml = tend.contração
-      ? `<div class="raio-tend-card" data-dir="especial">
-           <span class="raio-tend-card-titulo">⚠️ Efeito especial</span>
-           <p class="raio-tend-card-texto">${tend.contração}</p>
-         </div>` : '';
-
-    tendHtml=`
-    <div class="raio-tend-box">
-      <span class="raio-tend-titulo">Tendências periódicas e propriedades físicas (bloco ${sub.bloco})</span>
-      <div class="raio-tend-grid">
-        <div class="raio-tend-card" data-dir="periodo">
-          <span class="raio-tend-card-titulo">↔ Mesmo período</span>
-          <p class="raio-tend-card-texto">${tend.periodo}</p>
-        </div>
-        <div class="raio-tend-card" data-dir="grupo">
-          <span class="raio-tend-card-titulo">↕ Mesmo grupo</span>
-          <p class="raio-tend-card-texto">${tend.grupo}</p>
-        </div>
-        ${contHtml}
-      </div>
-      ${props ? `<div class="raio-tend-props">
-        <span class="raio-tend-props-titulo">Propriedades físicas — bloco ${sub.bloco} · subnível ${sub.sub} · ${sub.statusLabel}</span>
-        ${propRows}
-      </div>` : ''}
-      <div class="raio-tend-tags">
-        <span class="raio-tag raio-tag-periodo">↔ Mesmo período: r diminui com Z →</span>
-        <span class="raio-tag raio-tag-grupo">↕ Mesmo grupo: r aumenta ao descer ↓</span>
-      </div>
+  const painelBohrHtml=`
+    <div id="raio-painel-bohr-${Z}" style="display:none">
+      ${renderBohr(Z, el, sub, atomCor, atomGlow)}
     </div>`;
-  }
+
+  const painelLewisHtml=`
+    <div id="raio-painel-lewis-${Z}" style="display:none">
+      ${renderLewis(Z, el, sub, atomCor, atomGlow)}
+    </div>`;
 
   return `<div class="raio-wrap" style="--atom-color:${atomCor};--atom-color-glow:${atomGlow}">
     ${toggleHtml}
     ${painelDadosHtml}
     ${painelGradeHtml}
-    ${tendHtml}
+    ${painelBohrHtml}
+    ${painelLewisHtml}
   </div>`;
 }
 
-// ── Troca de vista (Dados / Grade periódica) ─────────────────────────────────
-function raioVista(vista, Z, btnEl){
-  const dadosEl = document.getElementById('raio-painel-dados-'+Z);
-  const gradeEl = document.getElementById('raio-painel-grade-'+Z);
-  const btnD    = document.getElementById('rbtn-dados-'+Z);
-  const btnG    = document.getElementById('rbtn-grade-'+Z);
-  if(vista==='dados'){
-    dadosEl.style.display=''; gradeEl.style.display='none';
-    btnD.classList.add('ativo');    btnD.setAttribute('aria-pressed','true');
-    btnG.classList.remove('ativo'); btnG.setAttribute('aria-pressed','false');
-  } else {
-    dadosEl.style.display='none'; gradeEl.style.display='';
-    btnG.classList.add('ativo');    btnG.setAttribute('aria-pressed','true');
-    btnD.classList.remove('ativo'); btnD.setAttribute('aria-pressed','false');
+// ── Diagrama de Bohr ─────────────────────────────────────────────────────────
+function renderBohr(Z, el, sub, atomCor, atomGlow){
+  const dist     = distribuirEletrons(Z);
+  const camadas  = porCamada(dist);
+  const nCamadas = Object.keys(camadas).length;
+  if(!nCamadas) return '';
+
+  const elPorCamada = [];
+  for(let n=1; n<=nCamadas; n++){
+    const subs  = camadas[n]||[];
+    const total = subs.reduce((a,{e})=>a+e,0);
+    elPorCamada.push({n, total, nome:'KLMNOPQ'[n-1]||'?'});
   }
+  const nVal    = nCamadas;
+  const elVal   = elPorCamada[nCamadas-1].total;
+  const nomeVal = elPorCamada[nCamadas-1].nome;
+
+  const COR_BORDA  = resolverCorCSS('--border');
+  const COR_DIM    = resolverCorCSS('--text-dim');
+  const COR_ACCENT = resolverCorCSS('--accent');
+  const COR_NUCLEO = resolverCorCSS('--bg-deep');
+  const COR_TEXT   = resolverCorCSS('--text-main');
+
+  function buildSVG(camPara, modo){
+    const nC     = camPara.length;
+    // Dimensões: SVG quadrado, cabe em 340px, margem direita para rótulos
+    const R_NUC  = 32;
+    const MARG   = 100;                                  // margem direita para anotações
+    const AVAIL  = 320;                                  // raio disponível do lado esquerdo
+    const GAP    = Math.min(38, (AVAIL - R_NUC - 8) / nC);
+    const R_EL   = Math.max(4.5, Math.min(7, GAP * 0.19));
+    const R_OUT  = R_NUC + nC * GAP + R_EL + 6;
+    const DIM    = R_OUT * 2 + 16;
+    const SVG_W  = DIM + MARG;
+    const SVG_H  = DIM;
+    const CX = DIM/2, CY = DIM/2;
+
+    const defs = `<defs>
+      <marker id="mA-${Z}-${modo}" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+        <path d="M0,0 L7,3.5 L0,7 Z" fill="${COR_ACCENT}"/>
+      </marker>
+      <marker id="mD-${Z}-${modo}" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+        <path d="M0,0 L7,3.5 L0,7 Z" fill="${COR_DIM}"/>
+      </marker>
+    </defs>`;
+
+    let p = [];
+
+    // Anéis internos primeiro (fundo)
+    camPara.forEach(({n:cn, total:nEl, nome:cnome}, idx)=>{
+      const r   = R_NUC + (idx+1)*GAP;
+      const isV = modo==='val' ? true : (cn===nVal);
+      p.push(`<circle cx="${CX.toFixed(1)}" cy="${CY.toFixed(1)}" r="${r.toFixed(1)}"
+        fill="none" stroke="${isV?atomCor:COR_BORDA}" stroke-width="${isV?2.2:1}"
+        opacity="${isV?1:0.4}"/>`);
+      // rótulo da camada à esquerda
+      if(modo==='all'){
+        p.push(`<text x="${(CX-r-6).toFixed(1)}" y="${(CY+4).toFixed(1)}"
+          text-anchor="end" font-family="Share Tech Mono,monospace"
+          font-size="10" fill="${isV?atomCor:COR_DIM}" opacity="${isV?1:0.65}">${cnome}</text>`);
+      }
+    });
+
+    // Elétrons
+    camPara.forEach(({n:cn, total:nEl}, idx)=>{
+      const r   = R_NUC + (idx+1)*GAP;
+      const isV = modo==='val' ? true : (cn===nVal);
+      for(let j=0; j<nEl; j++){
+        const ang = (2*Math.PI*j/nEl) - Math.PI/2;
+        const ex  = CX + r*Math.cos(ang);
+        const ey  = CY + r*Math.sin(ang);
+        if(isV) p.push(`<circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}"
+          r="${(R_EL+3).toFixed(1)}" fill="${atomGlow}" opacity="0.28"/>`);
+        p.push(`<circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}"
+          r="${R_EL.toFixed(1)}" fill="${isV?atomCor:COR_DIM}"
+          stroke="${isV?COR_NUCLEO:'none'}" stroke-width="${isV?1.2:0}"
+          opacity="${isV?1:0.6}"/>`);
+      }
+    });
+
+    // Núcleo (por cima dos anéis)
+    const symLen = (el.simbolo||'').length;
+    const symFS  = symLen > 2 ? 16 : 20;
+    p.push(
+      `<circle cx="${CX.toFixed(1)}" cy="${CY.toFixed(1)}" r="${R_NUC}"
+        fill="${COR_NUCLEO}" stroke="${atomCor}" stroke-width="2.5"/>`,
+      `<text x="${CX.toFixed(1)}" y="${(CY+1).toFixed(1)}"
+        text-anchor="middle" dominant-baseline="middle"
+        font-family="Rajdhani,sans-serif" font-weight="700"
+        font-size="${symFS}" fill="${atomCor}">${el.simbolo||''}</text>`,
+      `<text x="${CX.toFixed(1)}" y="${(CY+R_NUC-8).toFixed(1)}"
+        text-anchor="middle" font-family="Share Tech Mono,monospace"
+        font-size="8" fill="${COR_DIM}" opacity="0.8">${Z}</text>`
+    );
+
+    // Anotações (sempre no anel de valência = último)
+    const rVa  = R_NUC + camPara.length * GAP;
+    const LX   = CX + rVa + 12;                   // início do texto
+
+    // Camada de valência: seta do lado direito do anel (ângulo 0 = leste)
+    const pCx  = CX + rVa;
+    const pCy  = CY;
+    p.push(
+      `<line x1="${(pCx+R_EL+2).toFixed(1)}" y1="${pCy.toFixed(1)}"
+             x2="${(LX-4).toFixed(1)}" y2="${pCy.toFixed(1)}"
+             stroke="${COR_ACCENT}" stroke-width="1.3"
+             marker-end="url(#mA-${Z}-${modo})"/>`,
+      `<rect x="${LX.toFixed(1)}" y="${(pCy-16).toFixed(1)}"
+             width="94" height="22" rx="3"
+             fill="${COR_NUCLEO}" opacity="0.85"/>`,
+      `<text x="${(LX+4).toFixed(1)}" y="${(pCy-4).toFixed(1)}"
+             font-family="Rajdhani,sans-serif" font-size="10" font-weight="700"
+             fill="${COR_ACCENT}">Camada de valência</text>`,
+      `<text x="${(LX+4).toFixed(1)}" y="${(pCy+7).toFixed(1)}"
+             font-family="Rajdhani,sans-serif" font-size="10" font-weight="700"
+             fill="${COR_ACCENT}">(${nomeVal}) — ${elVal} e⁻</text>`
+    );
+
+    // Elétron de valência: seta do topo
+    const pEx  = CX;
+    const pEy  = CY - rVa;
+    p.push(
+      `<line x1="${pEx.toFixed(1)}" y1="${(pEy-R_EL-2).toFixed(1)}"
+             x2="${(LX-4).toFixed(1)}" y2="${(pEy-10).toFixed(1)}"
+             stroke="${COR_DIM}" stroke-width="1" stroke-dasharray="3,2"
+             marker-end="url(#mD-${Z}-${modo})"/>`,
+      `<rect x="${LX.toFixed(1)}" y="${(pEy-24).toFixed(1)}"
+             width="86" height="20" rx="3"
+             fill="${COR_NUCLEO}" opacity="0.85"/>`,
+      `<text x="${(LX+4).toFixed(1)}" y="${(pEy-13).toFixed(1)}"
+             font-family="Rajdhani,sans-serif" font-size="10"
+             fill="${COR_DIM}">Elétron de valência</text>`,
+      `<text x="${(LX+4).toFixed(1)}" y="${(pEy-2).toFixed(1)}"
+             font-family="Rajdhani,sans-serif" font-size="10"
+             fill="${COR_DIM}">${elVal} no nível ${nomeVal}</text>`
+    );
+
+    return `<svg viewBox="0 0 ${SVG_W.toFixed(0)} ${SVG_H.toFixed(0)}"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Diagrama de Bohr — ${elVal} elétron${elVal>1?'s':''} de valência na camada ${nomeVal}"
+      style="width:100%;height:auto;display:block;">
+      ${defs}
+      ${p.join('\n      ')}
+    </svg>`;
+  }
+
+  const svgVal = buildSVG([elPorCamada[nCamadas-1]], 'val');
+  const svgAll = buildSVG(elPorCamada, 'all');
+
+  const maxCap = [2,8,18,32,50,72,98];
+  const linhas = elPorCamada.map(({n,total,nome})=>{
+    const cap = maxCap[n-1]||2*n*n;
+    const pct = Math.round(total/cap*100);
+    const isV = n===nVal;
+    return `<div class="bohr-camada-row">
+      <span class="bohr-camada-nome" style="${isV?'color:'+atomCor:''}">${nome}</span>
+      <span class="bohr-camada-el">${total}/${cap} e⁻</span>
+      <div class="bohr-camada-bar-track">
+        <div class="bohr-camada-bar-fill" style="width:${pct}%;background:${isV?atomCor:COR_DIM};opacity:${isV?1:0.5}"></div>
+      </div>
+      ${isV?`<span class="bohr-camada-val-tag">← valência</span>`:''}
+    </div>`;
+  }).join('');
+
+  return `<div class="bohr-wrap">
+    <div class="bohr-header">
+      <span class="bohr-titulo">Diagrama de Bohr</span>
+      <div class="raio-view-toggle" role="group" aria-label="Modo do diagrama Bohr">
+        <button class="raio-vbtn ativo" id="bohr-btn-val-${Z}" aria-pressed="true"
+                onclick="bohrModo('val','${Z}')">Valência</button>
+        <button class="raio-vbtn" id="bohr-btn-all-${Z}" aria-pressed="false"
+                onclick="bohrModo('all','${Z}')">Todas as camadas</button>
+      </div>
+    </div>
+    <div class="bohr-svg-wrap">
+      <div id="bohr-svg-val-${Z}">${svgVal}</div>
+      <div id="bohr-svg-all-${Z}" style="display:none">${svgAll}</div>
+    </div>
+    <div class="bohr-camada-info">
+      <span class="bohr-camada-titulo">Elétrons por camada</span>
+      ${linhas}
+    </div>
+  </div>`;
+}
+
+// ── Diagrama de Lewis ─────────────────────────────────────────────────────────
+// Representa os elétrons de valência como pontos ao redor do símbolo.
+// Convenção: posições N, L, S, O (cima, direita, baixo, esquerda).
+// Cada posição aceita até 2 e⁻ (par); primeiro e⁻ solitário, depois par.
+// Ordem de preenchimento: N→L→S→O→N(par)→L(par)→S(par)→O(par) — Regra de Hund para Lewis.
+function renderLewis(Z, el, sub, atomCor, atomGlow){
+  if(!sub) return '<p class="raio-sem-dados">Diagrama de Lewis não disponível.</p>';
+
+  const elV = sub.elCount;   // elétrons de valência (último subnível)
+  // Para Lewis, contamos todos os e⁻ da camada de valência (não só do último subnível)
+  // Recalcula pela camada completa:
+  const dist    = distribuirEletrons(Z);
+  const camadas = porCamada(dist);
+  const nCam    = Object.keys(camadas).length;
+  const subsCam = camadas[nCam]||[];
+  const eValTotal = subsCam.reduce((a,{e})=>a+e,0);
+
+  // Máximo de e⁻ representáveis no Lewis = 8 (octeto); para H/He = 2
+  const maxLewis = (Z<=2) ? 2 : 8;
+  const eL = Math.min(eValTotal, maxLewis);
+
+  const COR_DIM    = resolverCorCSS('--text-dim');
+  const COR_ACCENT = resolverCorCSS('--accent');
+  const COR_TEXT   = resolverCorCSS('--text-main');
+  const COR_BG     = resolverCorCSS('--bg-card');
+  const COR_NUCLEO = resolverCorCSS('--bg-deep');
+
+  // Dimensões
+  const SZ   = 220;           // canvas quadrado
+  const CX   = SZ/2, CY = SZ/2;
+  const BOX  = 36;            // metade do lado da caixa do símbolo
+  const DIST = 54;            // distância do centro ao centro de cada face
+  const R_PT = 5.5;           // raio de cada ponto/elétron
+  const GAP  = 14;            // distância entre par de pontos
+
+  // Posições das 4 faces: cima, direita, baixo, esquerda
+  const FACES = [
+    {dx:0,  dy:-DIST, ax: 0,  ay:-1, label:''},   // N (cima)
+    {dx:DIST,dy:0,    ax: 1,  ay: 0, label:''},   // L (direita)
+    {dx:0,  dy:DIST,  ax: 0,  ay: 1, label:''},   // S (baixo)
+    {dx:-DIST,dy:0,   ax:-1,  ay: 0, label:''},   // O (esquerda)
+  ];
+
+  // Distribuição: 1 e⁻ por face (0-3), depois 2º e⁻ (0-3) — Regra de Hund
+  // Posição 0..7 → face e slot
+  const slots = [
+    {fi:0,slot:0},{fi:1,slot:0},{fi:2,slot:0},{fi:3,slot:0},  // 1 por face
+    {fi:0,slot:1},{fi:1,slot:1},{fi:2,slot:1},{fi:3,slot:1},  // par
+  ].slice(0, eL);
+
+  // Conta ocupação por face
+  const ocup = [0,0,0,0];
+  slots.forEach(({fi})=> ocup[fi]++);
+
+  let parts = [];
+  const defs = `<defs>
+    <marker id="lmA-${Z}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="${COR_ACCENT}"/>
+    </marker>
+  </defs>`;
+
+  // Fundo
+  parts.push(`<rect width="${SZ}" height="${SZ}" fill="transparent"/>`);
+
+  // Elétrons por face
+  FACES.forEach(({dx,dy,ax,ay}, fi)=>{
+    const n = ocup[fi];
+    if(n===0) return;
+    const fx = CX+dx, fy = CY+dy;  // centro da face
+
+    if(n===1){
+      // ponto único
+      parts.push(
+        `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${(R_PT+3).toFixed(1)}" fill="${atomGlow}" opacity="0.3"/>`,
+        `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${R_PT}" fill="${atomCor}" stroke="${COR_NUCLEO}" stroke-width="1.2"/>`
+      );
+    } else {
+      // par de pontos lado a lado perpendicular à face
+      // perpendicular: se face é vertical (ay!=0), par é horizontal; se horizontal, par é vertical
+      const px = ay!==0 ? GAP/2 : 0;
+      const py = ax!==0 ? GAP/2 : 0;
+      [-1,1].forEach(s=>{
+        const ex = fx + s*px;
+        const ey = fy + s*py;
+        parts.push(
+          `<circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="${(R_PT+2.5).toFixed(1)}" fill="${atomGlow}" opacity="0.28"/>`,
+          `<circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="${R_PT}" fill="${atomCor}" stroke="${COR_NUCLEO}" stroke-width="1.2"/>`
+        );
+      });
+      // linha de par
+      parts.push(`<line x1="${(fx-px).toFixed(1)}" y1="${(fy-py).toFixed(1)}"
+        x2="${(fx+px).toFixed(1)}" y2="${(fy+py).toFixed(1)}"
+        stroke="${atomCor}" stroke-width="1" opacity="0.5"/>`);
+    }
+  });
+
+  // Caixa do símbolo (por cima dos elétrons)
+  const symLen = (el.simbolo||'').length;
+  const symFS  = symLen > 2 ? 18 : 26;
+  parts.push(
+    `<rect x="${(CX-BOX).toFixed(1)}" y="${(CY-BOX).toFixed(1)}"
+           width="${(BOX*2).toFixed(0)}" height="${(BOX*2).toFixed(0)}"
+           rx="6" fill="${COR_NUCLEO}" stroke="${atomCor}" stroke-width="2"/>`,
+    `<text x="${CX.toFixed(1)}" y="${(CY+2).toFixed(1)}"
+           text-anchor="middle" dominant-baseline="middle"
+           font-family="Rajdhani,sans-serif" font-weight="700"
+           font-size="${symFS}" fill="${atomCor}">${el.simbolo||''}</text>`
+  );
+
+  // Anotação "e⁻ de valência"
+  const annoY = CY - DIST - R_PT - 22;
+  parts.push(
+    `<line x1="${(CX+4).toFixed(1)}" y1="${(CY-DIST-R_PT-3).toFixed(1)}"
+           x2="${(CX+38).toFixed(1)}" y2="${(annoY+12).toFixed(1)}"
+           stroke="${COR_DIM}" stroke-width="1" stroke-dasharray="3,2"
+           marker-end="url(#lmA-${Z})"/>`,
+    `<text x="${(CX+42).toFixed(1)}" y="${annoY.toFixed(1)}"
+           font-family="Rajdhani,sans-serif" font-size="10"
+           fill="${COR_ACCENT}" font-weight="700">${eValTotal} e⁻ de valência</text>`,
+    `<text x="${(CX+42).toFixed(1)}" y="${(annoY+12).toFixed(1)}"
+           font-family="Rajdhani,sans-serif" font-size="10"
+           fill="${COR_DIM}">${sub.statusLabel}</text>`
+  );
+
+  const svgLewis = `<svg viewBox="0 0 ${SZ} ${SZ}"
+    xmlns="http://www.w3.org/2000/svg"
+    role="img"
+    aria-label="Diagrama de Lewis do ${el.nome||el.simbolo}: ${eValTotal} elétrons de valência — ${sub.statusLabel}"
+    style="width:100%;height:auto;display:block;max-width:260px;">
+    ${defs}
+    ${parts.join('\n    ')}
+  </svg>`;
+
+  // Legenda explicativa
+  const pares  = Math.floor(eL/2);
+  const solt   = eL - pares*2;
+  const legendaRows = [
+    ['Elétrons de valência', `${eValTotal}`, atomCor],
+    ['Pares de elétrons',    `${pares}`,     atomCor],
+    ['Elétrons solitários',  `${solt}`,      COR_DIM],
+    ['Estado',               sub.statusLabel, COR_ACCENT],
+  ].map(([lbl,val,cor])=>
+    `<div class="lewis-legenda-row">
+      <div class="lewis-legenda-dot" style="background:${cor}"></div>
+      <span style="color:${resolverCorCSS('--text-dim')};min-width:140px">${lbl}</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-weight:700;color:${cor}">${val}</span>
+    </div>`
+  ).join('');
+
+  // Nota sobre limitação do modelo
+  const nota = eValTotal > 8
+    ? `<p style="font-size:calc(0.72rem * var(--font-scale));color:${COR_DIM};font-style:italic;margin-top:4px">
+        Nota: O diagrama de Lewis convencional representa até 8 e⁻ (octeto).
+        Este elemento possui ${eValTotal} e⁻ na camada de valência —
+        o excedente ocorre em elementos do bloco ${sub.bloco} com expansão de octeto.
+       </p>` : '';
+
+  return `<div class="lewis-wrap">
+    <div class="lewis-header">
+      <span class="lewis-titulo">Diagrama de Lewis — Elétrons de Valência</span>
+    </div>
+    <div class="lewis-svg-wrap">${svgLewis}</div>
+    <div class="lewis-legenda">
+      <span class="lewis-legenda-titulo">Legenda</span>
+      ${legendaRows}
+    </div>
+    ${nota}
+  </div>`;
+}
+
+// ── Troca de vista (Dados / Grade / Bohr / Lewis) ───────────────────────────
+function raioVista(vista, Z, btnEl){
+  const ids    = ['dados','grade','bohr','lewis'];
+  const paineis = ids.map(id => document.getElementById('raio-painel-'+id+'-'+Z));
+  const btns    = ids.map(id => document.getElementById('rbtn-'+id+'-'+Z));
+  ids.forEach((id, i) => {
+    const active = id === vista;
+    if(paineis[i]) paineis[i].style.display = active ? '' : 'none';
+    if(btns[i]){
+      btns[i].classList.toggle('ativo', active);
+      btns[i].setAttribute('aria-pressed', String(active));
+    }
+  });
+}
+// Troca o modo interno do diagrama Bohr (valência / todas as camadas)
+function bohrModo(modo, Z){
+  const svgVal  = document.getElementById('bohr-svg-val-'+Z);
+  const svgAll  = document.getElementById('bohr-svg-all-'+Z);
+  const btnVal  = document.getElementById('bohr-btn-val-'+Z);
+  const btnAll  = document.getElementById('bohr-btn-all-'+Z);
+  if(!svgVal || !svgAll) return;
+  const isVal = modo === 'val';
+  svgVal.style.display  = isVal ? '' : 'none';
+  svgAll.style.display  = isVal ? 'none' : '';
+  btnVal.classList.toggle('ativo', isVal);
+  btnVal.setAttribute('aria-pressed', String(isVal));
+  btnAll.classList.toggle('ativo', !isVal);
+  btnAll.setAttribute('aria-pressed', String(!isVal));
 }
 
 // ===== ESTADO GLOBAL =====
