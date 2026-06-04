@@ -682,10 +682,22 @@ function resolverCorCSS(cssVar){
                 .trim();
   return val || '#888';
 }
+function rgbToHex(str){
+  // converts 'rgb(r, g, b)' or '#rrggbb' to '#rrggbb'
+  if(!str) return '#888888';
+  if(str.startsWith('#')) return str;
+  const m = str.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if(m) return '#'+[m[1],m[2],m[3]].map(v=>parseInt(v).toString(16).padStart(2,'0')).join('');
+  return '#888888';
+}
 function corAtomo(bloco, ccHex){
   const varMap = {S:'--orb-s', P:'--orb-p', D:'--orb-d', F:'--orb-f'};
   const v = varMap[bloco];
-  return v ? resolverCorCSS(v) : (ccHex || '#888');
+  if(v){
+    const raw = resolverCorCSS(v);
+    return rgbToHex(raw);
+  }
+  return ccHex || '#888888';
 }
 function propsSubnivel(Z, el, sub){
   if(!sub) return null;
@@ -917,7 +929,7 @@ function renderRaio(Z, el, ccHex){
       ${barraHtml}
     </div>`;
 
-  const elJSON = JSON.stringify({numero:el.numero,simbolo:el.simbolo||'',nome:el.nome||'',grupo:el.grupo,periodo:el.periodo,cat:el.cat||'',obtencao:el.obtencao||''});
+  const elJSON = JSON.stringify({numero:el.numero,simbolo:el.simbolo||'',nome:el.nome||'',grupo:el.grupo,periodo:el.periodo||0,cat:el.cat||''});
 
   const painelGradeHtml=`
     <div id="raio-painel-grade-${Z}" style="display:none"
@@ -952,7 +964,7 @@ function renderRaio(Z, el, ccHex){
       subs2.forEach(({sub:s2, e:e2})=>{
         const t2 = s2[s2.length-1];
         const vm = {s:'--orb-s', p:'--orb-p', d:'--orb-d', f:'--orb-f'};
-        orbs.push({sub:s2, e:e2, tipo:t2, n:parseInt(s2[0]), cor:resolverCorCSS(vm[t2]||'--orb-s')});
+        orbs.push({sub:s2, e:e2, tipo:t2, n:parseInt(s2[0]), cor:rgbToHex(resolverCorCSS(vm[t2]||'--orb-s'))});
       });
     }
     return orbs;
@@ -1284,7 +1296,7 @@ function renderNuvem(Z, el, sub, atomCor, atomGlow){
     subs.forEach(({sub:s, e})=>{
       const tipo = s[s.length-1];
       const varMap = {s:'--orb-s', p:'--orb-p', d:'--orb-d', f:'--orb-f'};
-      const cor = resolverCorCSS(varMap[tipo]||'--orb-s');
+      const cor = rgbToHex(resolverCorCSS(varMap[tipo]||'--orb-s'));
       orbitaisInfo.push({sub:s, e, tipo, n:parseInt(s[0]), cor});
     });
   }
@@ -1361,7 +1373,7 @@ function abrirFullscreen(vista, Z){
 
   if(vista === 'grade'){
     const { mesmoPer, mesmoGrp } = vizinhosRaio(Z_num, el, allEls);
-    function esfera(e, isA){
+    const esfera = (e, isA) => {
       const r = RAIO[e.numero]; if(!r) return '';
       const sE = ultimoSubnivel(e.numero);
       const cE = sE ? corAtomo(sE.bloco, getCatColorHex(e.cat)) : getCatColorHex(e.cat);
@@ -1370,14 +1382,14 @@ function abrirFullscreen(vista, Z){
       const d  = Math.round(18+(r.r/RAIO_MAX_PM)*70);
       const bd = isA?`outline:2px solid var(--accent);outline-offset:2px;`:'';
       return `<div class="raio-grade-item"><div class="raio-grade-esfera" style="width:${d}px;height:${d}px;--esfera-cor:${cE};--esfera-glow:${gE};${bd}" aria-label="${e.nome}: ${r.r} pm"></div><span class="raio-grade-sim" style="color:${isA?'var(--accent)':'var(--text-dim)'}">${e.simbolo}</span><span class="raio-grade-val">${r.r} pm</span></div>`;
-    }
-    function bloco(lista, atual, titulo, seta){
+    };
+    const blocoFs = (lista, atual, titulo, seta) => {
       if(!lista.length) return '';
       const todos = [...lista, atual].sort((a,b)=>a.grupo-b.grupo||((a.periodo||0)-(b.periodo||0)));
       return `<div class="raio-grade-wrap visivel"><span class="raio-grade-titulo">${titulo}</span><div class="raio-grade">${todos.map(e=>esfera(e,e.numero===Z_num)).join('')}</div><div class="raio-grade-setas"><span>${seta}</span></div></div>`;
-    }
-    const gPer = bloco(mesmoPer, el, `Período ${(el.periodo||0)<=7?el.periodo:(el.cat==='Lantanídeo'?6:7)} — raio diminui →`, '← raio maior &nbsp;&nbsp;&nbsp; raio menor →');
-    const gGrp = bloco(mesmoGrp, el, `Grupo ${el.grupo} — raio aumenta ↓`, '↑ raio menor &nbsp;&nbsp;&nbsp; raio maior ↓');
+    };
+    const gPer = blocoFs(mesmoPer, el, `Período ${(el.periodo||0)<=7?el.periodo:(el.cat==='Lantanídeo'?6:7)} — raio diminui →`, '← raio maior &nbsp;&nbsp;&nbsp; raio menor →');
+    const gGrp = blocoFs(mesmoGrp, el, `Grupo ${el.grupo} — raio aumenta ↓`, '↑ raio menor &nbsp;&nbsp;&nbsp; raio maior ↓');
     body.innerHTML = `<div style="max-width:860px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:16px">${gPer}${gGrp}</div>`;
 
   } else if(vista === 'bohr'){
@@ -1437,6 +1449,10 @@ function _nuvemDrawOnCanvas(canvas, orbital){
   const N_DOTS = Math.min(12000, Math.max(2000, Z_num * 60));
 
   function hexToRgb(hex){
+    if(!hex) return {r:0,g:229,b:255};
+    // handle rgb() format
+    const mRgb = hex.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if(mRgb) return {r:parseInt(mRgb[1]),g:parseInt(mRgb[2]),b:parseInt(mRgb[3])};
     const h = hex.replace('#','');
     if(h.length < 6) return {r:0,g:229,b:255};
     return {r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16)};
@@ -1539,12 +1555,9 @@ function raioLazyRender(vista, Z){
 
   if(vista === 'grade'){
     const dados      = RAIO[Z_num];
-    const tipoKey    = dados ? dados.t : null;
-    const atomCor2   = sub ? corAtomo(sub.bloco, atomCor) : atomCor;
-    const ccHex      = atomCor;
     const allEls2    = [...elementosBase, ...lantanideos, ...actinideos];
     const { mesmoPer, mesmoGrp } = vizinhosRaio(Z_num, el, allEls2);
-    function esferaGrade(e, isAtual){
+    const esferaGrade = (e, isAtual) => {
       const r = RAIO[e.numero];
       if(!r) return '';
       const subE  = ultimoSubnivel(e.numero);
@@ -1561,8 +1574,8 @@ function raioLazyRender(vista, Z){
         <span class="raio-grade-sim" style="color:${isAtual?'var(--accent)':'var(--text-dim)'}">${e.simbolo}</span>
         <span class="raio-grade-val">${r.r} pm</span>
       </div>`;
-    }
-    function blocoGrade(lista, atual, titulo, seta){
+    };
+    const blocoGrade = (lista, atual, titulo, seta) => {
       if(!lista.length) return '';
       const todos = [...lista, atual].sort((a,b)=>a.grupo-b.grupo||((a.periodo||0)-(b.periodo||0)));
       const items = todos.map(e=>esferaGrade(e, e.numero===Z_num)).join('');
@@ -1571,7 +1584,7 @@ function raioLazyRender(vista, Z){
         <div class="raio-grade">${items}</div>
         <div class="raio-grade-setas"><span>${seta}</span></div>
       </div>`;
-    }
+    };
     const gradePer = blocoGrade(mesmoPer, el, `Período ${(el.periodo||0)<=7?el.periodo:(el.cat==='Lantanídeo'?6:7)} — raio diminui →`, '← raio maior &nbsp;&nbsp;&nbsp; raio menor →');
     const gradeGrp = blocoGrade(mesmoGrp, el, `Grupo ${el.grupo} — raio aumenta ↓`, '↑ raio menor &nbsp;&nbsp;&nbsp; raio maior ↓');
     painel.innerHTML = fsBar + `<div id="raio-grade-container-${Z_num}">${gradePer}${gradeGrp}</div>`;
@@ -1602,14 +1615,6 @@ function raioVista(vista, Z, btnEl){
   });
   if(vista !== 'dados'){
     raioLazyRender(vista, Z);
-  }
-  if(vista === 'nuvem'){
-    // nuvem canvas is initialized inside raioLazyRender on first call,
-    // but if already rendered, re-trigger draw (canvas may have been resized)
-    const painel = document.getElementById('raio-painel-nuvem-'+Z);
-    if(painel && painel.dataset.rendered){
-      setTimeout(()=>{ nuvemIniciarCanvas(Z); }, 20);
-    }
   }
 }
 function bohrModo(modo, Z){
@@ -1663,7 +1668,7 @@ function abrirModal(el,divEl){
   document.getElementById('modalConfig').innerHTML=renderConfig(Z);
   document.getElementById('modalObtencao').textContent=el.obtencao||'—';
   document.getElementById('modalCuriosidade').textContent=CURIOSIDADES[el.numero]||'—';
-  document.getElementById('modalRaio').innerHTML=renderRaio(Z,el,cc);
+  document.getElementById("modalRaio").innerHTML=renderRaio(Z,el,ccHex);
   modalOverlay.classList.add('aberto');
   modalOverlay.setAttribute('aria-hidden','false');
   anunciar(`${el.nome}, número atômico ${Z}, ${el.cat}, ${ESTADO_LABEL[est]}.`);
