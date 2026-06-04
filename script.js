@@ -988,7 +988,8 @@ function renderRaio(Z, el, ccHex){
     ${painelNuvemHtml}
   </div>`;
 }
-function renderBohr(Z, el, sub, atomCor, atomGlow){
+function renderBohr(Z, el, sub, atomCor, atomGlow, escala){
+  escala = escala || 1;
   const dist     = distribuirEletrons(Z);
   const camadas  = porCamada(dist);
   const nCamadas = Object.keys(camadas).length;
@@ -1012,16 +1013,18 @@ function renderBohr(Z, el, sub, atomCor, atomGlow){
 
   function buildSVG(camPara, modo){
     const nC     = camPara.length;
-    const R_NUC  = 32;
-    const MARG   = 100;
-    const AVAIL  = 320;
-    const GAP    = Math.min(38, (AVAIL - R_NUC - 8) / nC);
-    const R_EL   = Math.max(4.5, Math.min(7, GAP * 0.19));
+    const R_NUC  = Math.round(32 * escala);
+    const MARG   = Math.round(100 * escala);
+    const AVAIL  = Math.round(320 * escala);
+    const GAP    = Math.min(Math.round(38*escala), (AVAIL - R_NUC - 8) / nC);
+    const R_EL   = Math.max(4.5*escala, Math.min(7*escala, GAP * 0.19));
     const R_OUT  = R_NUC + nC * GAP + R_EL + 6;
     const DIM    = R_OUT * 2 + 16;
     const SVG_W  = DIM + MARG;
     const SVG_H  = DIM;
     const CX = DIM/2, CY = DIM/2;
+    const fSz = Math.round(10 * escala);
+    const fSzSm = Math.round(8 * escala);
 
     const defs = `<defs>
       <marker id="mA-${Z}-${modo}" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
@@ -1042,7 +1045,7 @@ function renderBohr(Z, el, sub, atomCor, atomGlow){
       if(modo==='all'){
         p.push(`<text x="${(CX-r-6).toFixed(1)}" y="${(CY+4).toFixed(1)}"
           text-anchor="end" font-family="Share Tech Mono,monospace"
-          font-size="10" fill="${isV?atomCor:COR_DIM}" opacity="${isV?1:0.65}">${cnome}</text>`);
+          font-size="${fSz}" fill="${isV?atomCor:COR_DIM}" opacity="${isV?1:0.65}">${cnome}</text>`);
       }
     });
     camPara.forEach(({n:cn, total:nEl}, idx)=>{
@@ -1061,20 +1064,22 @@ function renderBohr(Z, el, sub, atomCor, atomGlow){
       }
     });
     const symLen = (el.simbolo||'').length;
-    const symFS  = symLen > 2 ? 16 : 20;
+    const symFS  = Math.round((symLen > 2 ? 16 : 20) * escala);
     p.push(
       `<circle cx="${CX.toFixed(1)}" cy="${CY.toFixed(1)}" r="${R_NUC}"
-        fill="${COR_NUCLEO}" stroke="${atomCor}" stroke-width="2.5"/>`,
+        fill="${COR_NUCLEO}" stroke="${atomCor}" stroke-width="${(2.5*escala).toFixed(1)}"/>`,
       `<text x="${CX.toFixed(1)}" y="${(CY+1).toFixed(1)}"
         text-anchor="middle" dominant-baseline="middle"
         font-family="Rajdhani,sans-serif" font-weight="700"
         font-size="${symFS}" fill="${atomCor}">${el.simbolo||''}</text>`,
-      `<text x="${CX.toFixed(1)}" y="${(CY+R_NUC-8).toFixed(1)}"
+      `<text x="${CX.toFixed(1)}" y="${(CY+R_NUC-8*escala).toFixed(1)}"
         text-anchor="middle" font-family="Share Tech Mono,monospace"
-        font-size="8" fill="${COR_DIM}" opacity="0.8">${Z}</text>`
+        font-size="${fSzSm}" fill="${COR_DIM}" opacity="0.8">${Z}</text>`
     );
     const rVa  = R_NUC + camPara.length * GAP;
-    const LX   = CX + rVa + 12;
+    const LX   = CX + rVa + 12*escala;
+    const LW   = Math.round(94*escala);
+    const LH   = Math.round(22*escala);
     const pCx  = CX + rVa;
     const pCy  = CY;
     p.push(
@@ -1082,31 +1087,33 @@ function renderBohr(Z, el, sub, atomCor, atomGlow){
              x2="${(LX-4).toFixed(1)}" y2="${pCy.toFixed(1)}"
              stroke="${COR_ACCENT}" stroke-width="1.3"
              marker-end="url(#mA-${Z}-${modo})"/>`,
-      `<rect x="${LX.toFixed(1)}" y="${(pCy-16).toFixed(1)}"
-             width="94" height="22" rx="3"
+      `<rect x="${LX.toFixed(1)}" y="${(pCy-16*escala).toFixed(1)}"
+             width="${LW}" height="${LH}" rx="3"
              fill="${COR_NUCLEO}" opacity="0.85"/>`,
-      `<text x="${(LX+4).toFixed(1)}" y="${(pCy-4).toFixed(1)}"
-             font-family="Rajdhani,sans-serif" font-size="10" font-weight="700"
+      `<text x="${(LX+4*escala).toFixed(1)}" y="${(pCy-4*escala).toFixed(1)}"
+             font-family="Rajdhani,sans-serif" font-size="${fSz}" font-weight="700"
              fill="${COR_ACCENT}">Camada de valência</text>`,
-      `<text x="${(LX+4).toFixed(1)}" y="${(pCy+7).toFixed(1)}"
-             font-family="Rajdhani,sans-serif" font-size="10" font-weight="700"
+      `<text x="${(LX+4*escala).toFixed(1)}" y="${(pCy+7*escala).toFixed(1)}"
+             font-family="Rajdhani,sans-serif" font-size="${fSz}" font-weight="700"
              fill="${COR_ACCENT}">(${nomeVal}) — ${elVal} e⁻</text>`
     );
     const pEx  = CX;
     const pEy  = CY - rVa;
+    const LW2  = Math.round(86*escala);
+    const LH2  = Math.round(20*escala);
     p.push(
       `<line x1="${pEx.toFixed(1)}" y1="${(pEy-R_EL-2).toFixed(1)}"
-             x2="${(LX-4).toFixed(1)}" y2="${(pEy-10).toFixed(1)}"
+             x2="${(LX-4).toFixed(1)}" y2="${(pEy-10*escala).toFixed(1)}"
              stroke="${COR_DIM}" stroke-width="1" stroke-dasharray="3,2"
              marker-end="url(#mD-${Z}-${modo})"/>`,
-      `<rect x="${LX.toFixed(1)}" y="${(pEy-24).toFixed(1)}"
-             width="86" height="20" rx="3"
+      `<rect x="${LX.toFixed(1)}" y="${(pEy-24*escala).toFixed(1)}"
+             width="${LW2}" height="${LH2}" rx="3"
              fill="${COR_NUCLEO}" opacity="0.85"/>`,
-      `<text x="${(LX+4).toFixed(1)}" y="${(pEy-13).toFixed(1)}"
-             font-family="Rajdhani,sans-serif" font-size="10"
+      `<text x="${(LX+4*escala).toFixed(1)}" y="${(pEy-13*escala).toFixed(1)}"
+             font-family="Rajdhani,sans-serif" font-size="${fSz}"
              fill="${COR_DIM}">Elétron de valência</text>`,
-      `<text x="${(LX+4).toFixed(1)}" y="${(pEy-2).toFixed(1)}"
-             font-family="Rajdhani,sans-serif" font-size="10"
+      `<text x="${(LX+4*escala).toFixed(1)}" y="${(pEy-2*escala).toFixed(1)}"
+             font-family="Rajdhani,sans-serif" font-size="${fSz}"
              fill="${COR_DIM}">${elVal} no nível ${nomeVal}</text>`
     );
     return `<svg viewBox="0 0 ${SVG_W.toFixed(0)} ${SVG_H.toFixed(0)}"
@@ -1121,11 +1128,12 @@ function renderBohr(Z, el, sub, atomCor, atomGlow){
   const svgVal = buildSVG([elPorCamada[nCamadas-1]], 'val');
   const svgAll = buildSVG(elPorCamada, 'all');
   const maxCap = [2,8,18,32,50,72,98];
+  const fsCam  = Math.max(0.78, Math.min(1.4, escala));
   const linhas = elPorCamada.map(({n,total,nome})=>{
     const cap = maxCap[n-1]||2*n*n;
     const pct = Math.round(total/cap*100);
     const isV = n===nVal;
-    return `<div class="bohr-camada-row">
+    return `<div class="bohr-camada-row" style="font-size:calc(${fsCam} * 0.78rem * var(--font-scale))">
       <span class="bohr-camada-nome" style="${isV?'color:'+atomCor:''}">${nome}</span>
       <span class="bohr-camada-el">${total}/${cap} e⁻</span>
       <div class="bohr-camada-bar-track">
@@ -1154,7 +1162,8 @@ function renderBohr(Z, el, sub, atomCor, atomGlow){
     </div>
   </div>`;
 }
-function renderLewis(Z, el, sub, atomCor, atomGlow){
+function renderLewis(Z, el, sub, atomCor, atomGlow, escala){
+  escala = escala || 1;
   if(!sub) return '<p class="raio-sem-dados">Diagrama de Lewis não disponível.</p>';
   const elV = sub.elCount;
   const dist    = distribuirEletrons(Z);
@@ -1169,17 +1178,18 @@ function renderLewis(Z, el, sub, atomCor, atomGlow){
   const COR_TEXT   = resolverCorCSS('--text-main');
   const COR_BG     = resolverCorCSS('--bg-card');
   const COR_NUCLEO = resolverCorCSS('--bg-deep');
-  const SZ   = 220;
+  const SZ   = Math.round(220 * escala);
   const CX   = SZ/2, CY = SZ/2;
-  const BOX  = 36;
-  const DIST = 54;
-  const R_PT = 5.5;
-  const GAP  = 14;
+  const BOX  = Math.round(36 * escala);
+  const DIST = Math.round(54 * escala);
+  const R_PT = 5.5 * escala;
+  const GAP  = 14 * escala;
+  const fSz  = Math.round(10 * escala);
   const FACES = [
-    {dx:0,  dy:-DIST, ax: 0,  ay:-1, label:''},
-    {dx:DIST,dy:0,    ax: 1,  ay: 0, label:''},
-    {dx:0,  dy:DIST,  ax: 0,  ay: 1, label:''},
-    {dx:-DIST,dy:0,   ax:-1,  ay: 0, label:''},
+    {dx:0,   dy:-DIST, ax: 0,  ay:-1, label:''},
+    {dx:DIST, dy:0,    ax: 1,  ay: 0, label:''},
+    {dx:0,   dy:DIST,  ax: 0,  ay: 1, label:''},
+    {dx:-DIST,dy:0,    ax:-1,  ay: 0, label:''},
   ];
   const slots = [
     {fi:0,slot:0},{fi:1,slot:0},{fi:2,slot:0},{fi:3,slot:0},
@@ -1222,7 +1232,7 @@ function renderLewis(Z, el, sub, atomCor, atomGlow){
     }
   });
   const symLen = (el.simbolo||'').length;
-  const symFS  = symLen > 2 ? 18 : 26;
+  const symFS  = Math.round((symLen > 2 ? 18 : 26) * escala);
   parts.push(
     `<rect x="${(CX-BOX).toFixed(1)}" y="${(CY-BOX).toFixed(1)}"
            width="${(BOX*2).toFixed(0)}" height="${(BOX*2).toFixed(0)}"
@@ -1232,24 +1242,27 @@ function renderLewis(Z, el, sub, atomCor, atomGlow){
            font-family="Rajdhani,sans-serif" font-weight="700"
            font-size="${symFS}" fill="${atomCor}">${el.simbolo||''}</text>`
   );
-  const annoY = CY - DIST - R_PT - 22;
+  const annoY = CY - DIST - R_PT - 22*escala;
+  const annoX = CX + 38*escala;
+  const annoTX = CX + 42*escala;
   parts.push(
-    `<line x1="${(CX+4).toFixed(1)}" y1="${(CY-DIST-R_PT-3).toFixed(1)}"
-           x2="${(CX+38).toFixed(1)}" y2="${(annoY+12).toFixed(1)}"
+    `<line x1="${(CX+4*escala).toFixed(1)}" y1="${(CY-DIST-R_PT-3*escala).toFixed(1)}"
+           x2="${annoX.toFixed(1)}" y2="${(annoY+12*escala).toFixed(1)}"
            stroke="${COR_DIM}" stroke-width="1" stroke-dasharray="3,2"
            marker-end="url(#lmA-${Z})"/>`,
-    `<text x="${(CX+42).toFixed(1)}" y="${annoY.toFixed(1)}"
-           font-family="Rajdhani,sans-serif" font-size="10"
+    `<text x="${annoTX.toFixed(1)}" y="${annoY.toFixed(1)}"
+           font-family="Rajdhani,sans-serif" font-size="${fSz}"
            fill="${COR_ACCENT}" font-weight="700">${eValTotal} e⁻ de valência</text>`,
-    `<text x="${(CX+42).toFixed(1)}" y="${(annoY+12).toFixed(1)}"
-           font-family="Rajdhani,sans-serif" font-size="10"
+    `<text x="${annoTX.toFixed(1)}" y="${(annoY+12*escala).toFixed(1)}"
+           font-family="Rajdhani,sans-serif" font-size="${fSz}"
            fill="${COR_DIM}">${sub.statusLabel}</text>`
   );
+  const maxW = Math.round(260 * escala);
   const svgLewis = `<svg viewBox="0 0 ${SZ} ${SZ}"
     xmlns="http://www.w3.org/2000/svg"
     role="img"
     aria-label="Diagrama de Lewis do ${el.nome||el.simbolo}: ${eValTotal} elétrons de valência — ${sub.statusLabel}"
-    style="width:100%;height:auto;display:block;max-width:260px;">
+    style="width:100%;height:auto;display:block;max-width:${maxW}px;">
     ${defs}
     ${parts.join('\n    ')}
   </svg>`;
@@ -1358,7 +1371,6 @@ function abrirFullscreen(vista, Z){
   const titulos = {grade:'Grade de Raios Atômicos', bohr:'Diagrama de Bohr', lewis:'Diagrama de Lewis', nuvem:'Nuvem Eletrônica de Probabilidade'};
   title.textContent = titulos[vista] || vista;
 
-  // Get source data from the original lazy panel
   const srcPainel = document.getElementById('raio-painel-'+vista+'-'+Z);
   if(!srcPainel) return;
   const atomCor  = srcPainel.dataset.cor  || '#00e5ff';
@@ -1368,6 +1380,10 @@ function abrirFullscreen(vista, Z){
   const sub      = ultimoSubnivel(Z_num);
   const allEls   = [...elementosBase, ...lantanideos, ...actinideos];
   const el       = allEls.find(e=>e.numero===Z_num) || elData;
+
+  // Espaço útil (desconta header fixo ~52px)
+  const VH = window.innerHeight - 52;
+  const VW = window.innerWidth;
 
   body.innerHTML = '';
 
@@ -1379,33 +1395,47 @@ function abrirFullscreen(vista, Z){
       const cE = sE ? corAtomo(sE.bloco, getCatColorHex(e.cat)) : getCatColorHex(e.cat);
       const h6 = cE.replace('#','');
       const gE = h6.length>=6?`rgba(${parseInt(h6.slice(0,2),16)},${parseInt(h6.slice(2,4),16)},${parseInt(h6.slice(4,6),16)},0.4)`:'rgba(136,136,136,0.4)';
-      const d  = Math.round(18+(r.r/RAIO_MAX_PM)*70);
-      const bd = isA?`outline:2px solid var(--accent);outline-offset:2px;`:'';
-      return `<div class="raio-grade-item"><div class="raio-grade-esfera" style="width:${d}px;height:${d}px;--esfera-cor:${cE};--esfera-glow:${gE};${bd}" aria-label="${e.nome}: ${r.r} pm"></div><span class="raio-grade-sim" style="color:${isA?'var(--accent)':'var(--text-dim)'}">${e.simbolo}</span><span class="raio-grade-val">${r.r} pm</span></div>`;
+      const d  = Math.round(28+(r.r/RAIO_MAX_PM)*110);
+      const bd = isA?`outline:3px solid var(--accent);outline-offset:3px;`:'';
+      return `<div class="raio-grade-item fs-grade-item"><div class="raio-grade-esfera" style="width:${d}px;height:${d}px;--esfera-cor:${cE};--esfera-glow:${gE};${bd}" aria-label="${e.nome}: ${r.r} pm"></div><span class="raio-grade-sim fs-grade-sim" style="color:${isA?'var(--accent)':'var(--text-dim)'}">${e.simbolo}</span><span class="raio-grade-val fs-grade-val">${r.r} pm</span></div>`;
     };
     const blocoFs = (lista, atual, titulo, seta) => {
       if(!lista.length) return '';
       const todos = [...lista, atual].sort((a,b)=>a.grupo-b.grupo||((a.periodo||0)-(b.periodo||0)));
-      return `<div class="raio-grade-wrap visivel"><span class="raio-grade-titulo">${titulo}</span><div class="raio-grade">${todos.map(e=>esfera(e,e.numero===Z_num)).join('')}</div><div class="raio-grade-setas"><span>${seta}</span></div></div>`;
+      return `<div class="raio-grade-wrap visivel fs-grade-wrap"><span class="raio-grade-titulo fs-grade-titulo">${titulo}</span><div class="raio-grade fs-grade">${todos.map(e=>esfera(e,e.numero===Z_num)).join('')}</div><div class="raio-grade-setas">${seta}</div></div>`;
     };
     const gPer = blocoFs(mesmoPer, el, `Período ${(el.periodo||0)<=7?el.periodo:(el.cat==='Lantanídeo'?6:7)} — raio diminui →`, '← raio maior &nbsp;&nbsp;&nbsp; raio menor →');
     const gGrp = blocoFs(mesmoGrp, el, `Grupo ${el.grupo} — raio aumenta ↓`, '↑ raio menor &nbsp;&nbsp;&nbsp; raio maior ↓');
-    body.innerHTML = `<div style="max-width:860px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:16px">${gPer}${gGrp}</div>`;
+    body.innerHTML = `<div class="fs-grade-container">${gPer}${gGrp}</div>`;
 
   } else if(vista === 'bohr'){
+    const dist2 = distribuirEletrons(Z_num);
+    const nCam  = Object.keys(porCamada(dist2)).length;
+    const R_NUC_B = 32, GAP_B = Math.min(38,(320-32-8)/nCam);
+    const R_OUT_B = R_NUC_B + nCam*GAP_B + 7 + 6;
+    const DIM_B   = R_OUT_B*2 + 16;
+    const SVG_W_B = DIM_B + 100;
+    const escalaW = (VW * 0.88) / SVG_W_B;
+    const escalaH = (VH * 0.72) / DIM_B;
+    const escala  = Math.min(Math.max(escalaW, escalaH), 4.0);
     const wrap = document.createElement('div');
-    wrap.innerHTML = renderBohr(Z_num, el, sub, atomCor, atomGlow);
+    wrap.className = 'fs-bohr-wrap';
+    wrap.innerHTML = renderBohr(Z_num, el, sub, atomCor, atomGlow, escala);
     body.appendChild(wrap);
 
   } else if(vista === 'lewis'){
+    const escalaH = (VH * 0.72) / 220;
+    const escalaW = (VW * 0.55) / 220;
+    const escala  = Math.min(Math.max(escalaH, escalaW), 4.5);
     const wrap = document.createElement('div');
-    wrap.innerHTML = renderLewis(Z_num, el, sub, atomCor, atomGlow);
+    wrap.className = 'fs-lewis-wrap';
+    wrap.innerHTML = renderLewis(Z_num, el, sub, atomCor, atomGlow, escala);
     body.appendChild(wrap);
 
   } else if(vista === 'nuvem'){
     const orbitaisData = srcPainel.dataset.orbitais || '[]';
     const nuvemHTML = renderNuvem(Z_num, el, sub, atomCor, atomGlow);
-    body.innerHTML = nuvemHTML;
+    body.innerHTML = `<div class="fs-nuvem-wrap">${nuvemHTML}</div>`;
     const canvas = body.querySelector('canvas');
     const sel    = body.querySelector('.nuvem-select');
     if(canvas){
@@ -1413,11 +1443,12 @@ function abrirFullscreen(vista, Z){
       canvas.dataset.orbitais = orbitaisData;
       canvas.dataset.cor      = atomCor;
       canvas.dataset.glow     = atomGlow;
+      canvas.classList.add('fs-nuvem-canvas');
     }
     if(sel) sel.onchange = ()=>{ if(canvas){ _nuvemDrawOnCanvas(canvas, sel.value); nuvemLegenda(body, canvas, sel.value); } };
     setTimeout(()=>{
       if(canvas){ _nuvemDrawOnCanvas(canvas, 'all'); nuvemLegenda(body, canvas, 'all'); }
-    }, 40);
+    }, 50);
   }
 
   ov.classList.add('aberto');
