@@ -482,7 +482,7 @@ body {
 .fs-nuvem-wrap .nuvem-leg-row { font-size:0.85rem; gap:7px; }
 .fs-nuvem-wrap .nuvem-leg-dot { width:11px; height:11px; }
 
-/* ===== NUVEM ELETRÔNICA ===== */
+/ ===== NUVEM ELETRÔNICA ===== /
 .nuvem-wrap { display:flex; flex-direction:column; gap:calc(8px * var(--font-scale)); }
 .nuvem-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
 .nuvem-titulo { font-size:calc(0.65rem * var(--font-scale)); font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-main); }
