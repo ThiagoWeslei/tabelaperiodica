@@ -853,41 +853,6 @@ function renderRaio(Z, el, ccHex){
   const fonteLabel= fonteKey ? (RAIO_FONTE_LABEL[fonteKey]||fonteKey) : '—';
   const diam = rPm ? Math.round(20+(rPm/RAIO_MAX_PM)*60) : 40;
   const pct  = rPm ? Math.round((rPm/RAIO_MAX_PM)*100)   : 0;
-  const allEls = [...elementosBase, ...lantanideos, ...actinideos];
-  const { mesmoPer, mesmoGrp } = vizinhosRaio(Z, el, allEls);
-  function esferaGrade(e, isAtual){
-    const r = RAIO[e.numero];
-    if(!r) return '';
-    const subE  = ultimoSubnivel(e.numero);
-    const corE  = subE ? corAtomo(subE.bloco, getCatColorHex(e.cat)) : getCatColorHex(e.cat);
-    const h6    = corE.replace('#','');
-    const glowE = h6.length>=6
-      ? `rgba(${parseInt(h6.slice(0,2),16)},${parseInt(h6.slice(2,4),16)},${parseInt(h6.slice(4,6),16)},0.4)`
-      : 'rgba(136,136,136,0.4)';
-    const d     = Math.round(14+(r.r/RAIO_MAX_PM)*46);
-    const bord  = isAtual ? `outline:2px solid var(--accent);outline-offset:2px;` : '';
-    return `<div class="raio-grade-item">
-      <div class="raio-grade-esfera" style="width:${d}px;height:${d}px;--esfera-cor:${corE};--esfera-glow:${glowE};${bord}"
-           aria-label="${e.nome}: ${r.r} pm"></div>
-      <span class="raio-grade-sim" style="color:${isAtual?'var(--accent)':'var(--text-dim)'}">${e.simbolo}</span>
-      <span class="raio-grade-val">${r.r} pm</span>
-    </div>`;
-  }
-
-  function blocoGrade(lista, atual, titulo, seta){
-    if(!lista.length && !rPm) return '';
-    const todos = [...lista, atual].sort((a,b)=>a.grupo-b.grupo||((a.periodo||0)-(b.periodo||0)));
-    const items = todos.map(e=>esferaGrade(e, e.numero===Z)).join('');
-    return `<div class="raio-grade-wrap visivel" id="raio-grade-${Z}-${titulo.replace(/\s/g,'')}">
-      <span class="raio-grade-titulo">${titulo}</span>
-      <div class="raio-grade">${items}</div>
-      <div class="raio-grade-setas"><span>${seta}</span></div>
-    </div>`;
-  }
-
-  const gradePer = blocoGrade(mesmoPer, el, `Período ${(el.periodo||0)<=7?el.periodo:(el.cat==='Lantanídeo'?6:7)} — raio diminui →`, '← raio maior &nbsp;&nbsp;&nbsp; raio menor →');
-  const gradeGrp = blocoGrade(mesmoGrp, el, `Grupo ${el.grupo} — raio aumenta ↓`, '↑ raio menor &nbsp;&nbsp;&nbsp; raio maior ↓');
-  const gradeHtml= `<div id="raio-grade-container-${Z}">${gradePer}${gradeGrp}</div>`;
   const circuloHtml=`
     <div class="raio-circulo-wrap">
       <div class="raio-circulo" style="width:${diam}px;height:${diam}px;--atom-color:${atomCor};--atom-color-glow:${atomGlow}"
@@ -903,12 +868,7 @@ function renderRaio(Z, el, ccHex){
        </div>`
     : `<div class="raio-valor-box"><span class="raio-valor-titulo">Raio atômico</span>
        <span class="raio-sem-dados">Sem dado experimental disponível</span></div>`;
-  const iupacHtml = tipoKey ? `
-    <div class="raio-iupac-box">
-      <span class="raio-iupac-titulo">📐 Definição IUPAC — ${tipoLabel}</span>
-      <p class="raio-iupac-texto">${tipoDef}</p>
-      <span class="raio-iupac-fonte">Fonte: ${fonteLabel}</span>
-    </div>` : '';
+  const iupacHtml = '';
   const subHtml = sub ? (()=>{
     const statusClass = {
       preenchido:    'raio-status-preenchido',
@@ -946,6 +906,8 @@ function renderRaio(Z, el, ccHex){
                 onclick="raioVista('bohr','${Z}',this)">Bohr</button>
         <button class="raio-vbtn" id="rbtn-lewis-${Z}" aria-pressed="false"
                 onclick="raioVista('lewis','${Z}',this)">Lewis</button>
+        <button class="raio-vbtn" id="rbtn-nuvem-${Z}" aria-pressed="false"
+                onclick="raioVista('nuvem','${Z}',this)">Nuvem</button>
       </div>
     </div>`;
   const painelDadosHtml=`
@@ -953,22 +915,56 @@ function renderRaio(Z, el, ccHex){
       <div class="raio-visual">${circuloHtml}<div class="raio-info-col">${valorHtml}</div></div>
       ${subHtml}
       ${barraHtml}
-      ${iupacHtml}
     </div>`;
 
+  const elJSON = JSON.stringify({numero:el.numero,simbolo:el.simbolo||'',nome:el.nome||'',grupo:el.grupo,periodo:el.periodo,cat:el.cat||'',obtencao:el.obtencao||''});
+
   const painelGradeHtml=`
-    <div id="raio-painel-grade-${Z}" style="display:none">
-      ${gradeHtml}
+    <div id="raio-painel-grade-${Z}" style="display:none"
+         data-lazy="grade" data-z="${Z}"
+         data-cor="${atomCor.replace(/"/g,'&quot;')}"
+         data-glow="${atomGlow.replace(/"/g,'&quot;')}"
+         data-el='${elJSON.replace(/'/g,'&#39;')}'>
     </div>`;
 
   const painelBohrHtml=`
-    <div id="raio-painel-bohr-${Z}" style="display:none">
-      ${renderBohr(Z, el, sub, atomCor, atomGlow)}
+    <div id="raio-painel-bohr-${Z}" style="display:none"
+         data-lazy="bohr" data-z="${Z}"
+         data-cor="${atomCor.replace(/"/g,'&quot;')}"
+         data-glow="${atomGlow.replace(/"/g,'&quot;')}"
+         data-el='${elJSON.replace(/'/g,'&#39;')}'>
     </div>`;
 
   const painelLewisHtml=`
-    <div id="raio-painel-lewis-${Z}" style="display:none">
-      ${renderLewis(Z, el, sub, atomCor, atomGlow)}
+    <div id="raio-painel-lewis-${Z}" style="display:none"
+         data-lazy="lewis" data-z="${Z}"
+         data-cor="${atomCor.replace(/"/g,'&quot;')}"
+         data-glow="${atomGlow.replace(/"/g,'&quot;')}"
+         data-el='${elJSON.replace(/'/g,'&#39;')}'>
+    </div>`;
+
+  // pre-compute nuvem orbitais for fullscreen access before lazy render
+  const _nuvemOrbs = (()=>{
+    const dist2 = distribuirEletrons(Z); const cam2 = porCamada(dist2);
+    const nc2 = Object.keys(cam2).length; const orbs = [];
+    for(let n2=1; n2<=nc2; n2++){
+      const subs2 = cam2[n2]||[];
+      subs2.forEach(({sub:s2, e:e2})=>{
+        const t2 = s2[s2.length-1];
+        const vm = {s:'--orb-s', p:'--orb-p', d:'--orb-d', f:'--orb-f'};
+        orbs.push({sub:s2, e:e2, tipo:t2, n:parseInt(s2[0]), cor:resolverCorCSS(vm[t2]||'--orb-s')});
+      });
+    }
+    return orbs;
+  })();
+
+  const painelNuvemHtml=`
+    <div id="raio-painel-nuvem-${Z}" style="display:none"
+         data-lazy="nuvem" data-z="${Z}"
+         data-cor="${atomCor.replace(/"/g,'&quot;')}"
+         data-glow="${atomGlow.replace(/"/g,'&quot;')}"
+         data-orbitais='${JSON.stringify(_nuvemOrbs).replace(/'/g,'&#39;')}'
+         data-el='${elJSON.replace(/'/g,'&#39;')}'>
     </div>`;
 
   return `<div class="raio-wrap" style="--atom-color:${atomCor};--atom-color-glow:${atomGlow}">
@@ -977,6 +973,7 @@ function renderRaio(Z, el, ccHex){
     ${painelGradeHtml}
     ${painelBohrHtml}
     ${painelLewisHtml}
+    ${painelNuvemHtml}
   </div>`;
 }
 function renderBohr(Z, el, sub, atomCor, atomGlow){
@@ -1277,8 +1274,322 @@ function renderLewis(Z, el, sub, atomCor, atomGlow){
     ${nota}
   </div>`;
 }
+function renderNuvem(Z, el, sub, atomCor, atomGlow){
+  const dist    = distribuirEletrons(Z);
+  const camadas = porCamada(dist);
+  const nCam    = Object.keys(camadas).length;
+  const orbitaisInfo = [];
+  for(let n=1; n<=nCam; n++){
+    const subs = camadas[n]||[];
+    subs.forEach(({sub:s, e})=>{
+      const tipo = s[s.length-1];
+      const varMap = {s:'--orb-s', p:'--orb-p', d:'--orb-d', f:'--orb-f'};
+      const cor = resolverCorCSS(varMap[tipo]||'--orb-s');
+      orbitaisInfo.push({sub:s, e, tipo, n:parseInt(s[0]), cor});
+    });
+  }
+  const orbitaisJSON = JSON.stringify(orbitaisInfo);
+  return `<div class="nuvem-wrap">
+    <div class="nuvem-header">
+      <span class="nuvem-titulo">Nuvem Eletrônica de Probabilidade</span>
+      <div class="nuvem-controles" role="group" aria-label="Controles da nuvem">
+        <label class="nuvem-label">Orbital:</label>
+        <select class="nuvem-select" id="nuvem-orb-${Z}" onchange="nuvemMudarOrbital(${Z})">
+          <option value="all">Todos</option>
+          ${orbitaisInfo.map(o=>`<option value="${o.sub}">${o.sub} (${o.e} e⁻)</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <canvas id="nuvem-canvas-${Z}" class="nuvem-canvas"
+            aria-label="Nuvem eletrônica de probabilidade do ${el.nome}"
+            data-z="${Z}" data-orbitais='${orbitaisJSON}'
+            data-cor="${atomCor}" data-glow="${atomGlow}"></canvas>
+    <div class="nuvem-legenda" id="nuvem-legenda-${Z}"></div>
+  </div>`;
+}
+
+function nuvemIniciarCanvas(Z, forceOrbital){
+  const canvas = document.getElementById('nuvem-canvas-'+Z);
+  if(!canvas) return;
+  const sel    = document.getElementById('nuvem-orb-'+Z);
+  const orbital= forceOrbital || (sel ? sel.value : 'all');
+  _nuvemDrawOnCanvas(canvas, orbital);
+  nuvemLegenda(canvas.closest('.nuvem-wrap'), canvas, orbital);
+}
+
+function nuvemLegenda(container, canvas, orbital){
+  const leg = container ? container.querySelector('.nuvem-legenda') : null;
+  if(!leg || !canvas) return;
+  const orbs  = JSON.parse(canvas.dataset.orbitais||'[]');
+  const shown = (orbital && orbital !== 'all') ? orbs.filter(o=>o.sub===orbital) : orbs;
+  leg.innerHTML = shown.map(o=>`<div class="nuvem-leg-row"><span class="nuvem-leg-dot" style="background:${o.cor}"></span><span class="nuvem-leg-sub">${o.sub}</span><span class="nuvem-leg-e">${o.e} e⁻</span></div>`).join('');
+}
+
+function nuvemMudarOrbital(Z){
+  const canvas = document.getElementById('nuvem-canvas-'+Z);
+  const sel    = document.getElementById('nuvem-orb-'+Z);
+  if(!canvas) return;
+  const orbital = sel ? sel.value : 'all';
+  _nuvemDrawOnCanvas(canvas, orbital);
+  nuvemLegenda(canvas.closest('.nuvem-wrap'), canvas, orbital);
+}
+
+/* ===== FULLSCREEN ===== */
+let _fsZ = null, _fsVista = null;
+function abrirFullscreen(vista, Z){
+  _fsZ = Z; _fsVista = vista;
+  const ov    = document.getElementById('fullscreen-overlay');
+  const body  = document.getElementById('fullscreen-body');
+  const title = document.getElementById('fullscreen-title');
+  if(!ov || !body) return;
+
+  const titulos = {grade:'Grade de Raios Atômicos', bohr:'Diagrama de Bohr', lewis:'Diagrama de Lewis', nuvem:'Nuvem Eletrônica de Probabilidade'};
+  title.textContent = titulos[vista] || vista;
+
+  // Get source data from the original lazy panel
+  const srcPainel = document.getElementById('raio-painel-'+vista+'-'+Z);
+  if(!srcPainel) return;
+  const atomCor  = srcPainel.dataset.cor  || '#00e5ff';
+  const atomGlow = srcPainel.dataset.glow || 'rgba(0,229,255,0.5)';
+  const elData   = JSON.parse(srcPainel.dataset.el || '{}');
+  const Z_num    = parseInt(srcPainel.dataset.z) || Z;
+  const sub      = ultimoSubnivel(Z_num);
+  const allEls   = [...elementosBase, ...lantanideos, ...actinideos];
+  const el       = allEls.find(e=>e.numero===Z_num) || elData;
+
+  body.innerHTML = '';
+
+  if(vista === 'grade'){
+    const { mesmoPer, mesmoGrp } = vizinhosRaio(Z_num, el, allEls);
+    function esfera(e, isA){
+      const r = RAIO[e.numero]; if(!r) return '';
+      const sE = ultimoSubnivel(e.numero);
+      const cE = sE ? corAtomo(sE.bloco, getCatColorHex(e.cat)) : getCatColorHex(e.cat);
+      const h6 = cE.replace('#','');
+      const gE = h6.length>=6?`rgba(${parseInt(h6.slice(0,2),16)},${parseInt(h6.slice(2,4),16)},${parseInt(h6.slice(4,6),16)},0.4)`:'rgba(136,136,136,0.4)';
+      const d  = Math.round(18+(r.r/RAIO_MAX_PM)*70);
+      const bd = isA?`outline:2px solid var(--accent);outline-offset:2px;`:'';
+      return `<div class="raio-grade-item"><div class="raio-grade-esfera" style="width:${d}px;height:${d}px;--esfera-cor:${cE};--esfera-glow:${gE};${bd}" aria-label="${e.nome}: ${r.r} pm"></div><span class="raio-grade-sim" style="color:${isA?'var(--accent)':'var(--text-dim)'}">${e.simbolo}</span><span class="raio-grade-val">${r.r} pm</span></div>`;
+    }
+    function bloco(lista, atual, titulo, seta){
+      if(!lista.length) return '';
+      const todos = [...lista, atual].sort((a,b)=>a.grupo-b.grupo||((a.periodo||0)-(b.periodo||0)));
+      return `<div class="raio-grade-wrap visivel"><span class="raio-grade-titulo">${titulo}</span><div class="raio-grade">${todos.map(e=>esfera(e,e.numero===Z_num)).join('')}</div><div class="raio-grade-setas"><span>${seta}</span></div></div>`;
+    }
+    const gPer = bloco(mesmoPer, el, `Período ${(el.periodo||0)<=7?el.periodo:(el.cat==='Lantanídeo'?6:7)} — raio diminui →`, '← raio maior &nbsp;&nbsp;&nbsp; raio menor →');
+    const gGrp = bloco(mesmoGrp, el, `Grupo ${el.grupo} — raio aumenta ↓`, '↑ raio menor &nbsp;&nbsp;&nbsp; raio maior ↓');
+    body.innerHTML = `<div style="max-width:860px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:16px">${gPer}${gGrp}</div>`;
+
+  } else if(vista === 'bohr'){
+    const wrap = document.createElement('div');
+    wrap.innerHTML = renderBohr(Z_num, el, sub, atomCor, atomGlow);
+    body.appendChild(wrap);
+
+  } else if(vista === 'lewis'){
+    const wrap = document.createElement('div');
+    wrap.innerHTML = renderLewis(Z_num, el, sub, atomCor, atomGlow);
+    body.appendChild(wrap);
+
+  } else if(vista === 'nuvem'){
+    const orbitaisData = srcPainel.dataset.orbitais || '[]';
+    const nuvemHTML = renderNuvem(Z_num, el, sub, atomCor, atomGlow);
+    body.innerHTML = nuvemHTML;
+    const canvas = body.querySelector('canvas');
+    const sel    = body.querySelector('.nuvem-select');
+    if(canvas){
+      canvas.dataset.z        = Z_num;
+      canvas.dataset.orbitais = orbitaisData;
+      canvas.dataset.cor      = atomCor;
+      canvas.dataset.glow     = atomGlow;
+    }
+    if(sel) sel.onchange = ()=>{ if(canvas){ _nuvemDrawOnCanvas(canvas, sel.value); nuvemLegenda(body, canvas, sel.value); } };
+    setTimeout(()=>{
+      if(canvas){ _nuvemDrawOnCanvas(canvas, 'all'); nuvemLegenda(body, canvas, 'all'); }
+    }, 40);
+  }
+
+  ov.classList.add('aberto');
+  ov.setAttribute('aria-hidden','false');
+  document.getElementById('btnFullscreenClose').focus();
+  anunciar(`${titulos[vista]||vista} expandido para tela cheia.`);
+}
+
+
+function _nuvemDrawOnCanvas(canvas, orbital){
+  if(!canvas) return;
+  const orbitaisInfo = JSON.parse(canvas.dataset.orbitais||'[]');
+  const atomCor = canvas.dataset.cor || '#00e5ff';
+  const Z_num   = parseInt(canvas.dataset.z)||1;
+
+  const DIM = Math.max(canvas.offsetWidth, canvas.offsetHeight, 340);
+  canvas.width  = DIM;
+  canvas.height = DIM;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,DIM,DIM);
+
+  const bg = resolverCorCSS('--bg-card');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,DIM,DIM);
+
+  const CX = DIM/2, CY = DIM/2;
+  const MAX_R = DIM*0.46;
+  const SHELL_SCALE = { s:1.0, p:0.78, d:0.6, f:0.45 };
+  const N_DOTS = Math.min(12000, Math.max(2000, Z_num * 60));
+
+  function hexToRgb(hex){
+    const h = hex.replace('#','');
+    if(h.length < 6) return {r:0,g:229,b:255};
+    return {r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16)};
+  }
+
+  const toRender = orbital === 'all' ? orbitaisInfo : orbitaisInfo.filter(o=>o.sub===orbital);
+  if(!toRender.length) return;
+  const totalE = toRender.reduce((a,o)=>a+o.e,0);
+
+  toRender.forEach(orb=>{
+    const frac = orb.e / totalE;
+    const nDots = Math.round(N_DOTS * frac);
+    const nLevel = orb.n;
+    const tipo   = orb.tipo;
+    const scale  = SHELL_SCALE[tipo] || 1.0;
+    const baseR  = MAX_R * (nLevel / 7) * scale;
+    const spread = baseR * (0.35 + 0.15*(tipo==='s'?0:tipo==='p'?1:tipo==='d'?2:3));
+    const {r:cr, g:cg, b:cb} = hexToRgb(orb.cor);
+
+    for(let i=0; i<nDots; i++){
+      let x, y, alpha;
+      if(tipo === 's'){
+        const u = Math.random();
+        const r = baseR * Math.pow(u, 1/3) + (Math.random()-0.5)*spread*0.6;
+        const theta = Math.random() * Math.PI * 2;
+        x = CX + r * Math.cos(theta);
+        y = CY + r * Math.sin(theta);
+        alpha = 0.55 - (r/(baseR+spread))*0.4;
+      } else if(tipo === 'p'){
+        const lobe = Math.random() < 0.5 ? 1 : -1;
+        const r = baseR * (0.5 + Math.random() * 0.9);
+        const ang = (Math.random() - 0.5) * Math.PI * 0.7;
+        x = CX + lobe * r * Math.cos(ang);
+        y = CY + r * Math.sin(ang) * 0.5;
+        alpha = 0.5 * (1 - Math.abs(ang) / (Math.PI*0.7)*0.5);
+      } else if(tipo === 'd'){
+        const lobe = Math.floor(Math.random()*4);
+        const ang0 = lobe * Math.PI/2 + Math.PI/4;
+        const r  = baseR * (0.3 + Math.random() * 0.85);
+        const jitter = (Math.random()-0.5) * spread * 0.9;
+        x = CX + (r + jitter) * Math.cos(ang0 + (Math.random()-0.5)*0.6);
+        y = CY + (r + jitter) * Math.sin(ang0 + (Math.random()-0.5)*0.6);
+        alpha = 0.4 + Math.random()*0.2;
+      } else {
+        const lobe = Math.floor(Math.random()*7);
+        const ang0 = lobe * (Math.PI*2/7);
+        const r  = baseR * (0.25 + Math.random() * 0.75);
+        const jitter = (Math.random()-0.5) * spread * 1.1;
+        x = CX + (r + jitter) * Math.cos(ang0 + (Math.random()-0.5)*0.4);
+        y = CY + (r + jitter) * Math.sin(ang0 + (Math.random()-0.5)*0.4);
+        alpha = 0.3 + Math.random()*0.25;
+      }
+      alpha = Math.max(0.05, Math.min(0.82, alpha));
+      ctx.beginPath();
+      ctx.arc(x, y, 1.2, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha.toFixed(2)})`;
+      ctx.fill();
+    }
+  });
+
+  const grd = ctx.createRadialGradient(CX,CY,1,CX,CY,14);
+  const {r:nr,g:ng,b:nb} = hexToRgb(atomCor);
+  grd.addColorStop(0, `rgba(${nr},${ng},${nb},0.95)`);
+  grd.addColorStop(0.5,`rgba(${nr},${ng},${nb},0.5)`);
+  grd.addColorStop(1,  `rgba(${nr},${ng},${nb},0)`);
+  ctx.beginPath();
+  ctx.arc(CX,CY,14,0,Math.PI*2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+}
+
+function fecharFullscreen(){
+  const ov = document.getElementById('fullscreen-overlay');
+  if(!ov) return;
+  ov.classList.remove('aberto');
+  ov.setAttribute('aria-hidden','true');
+  _fsZ = null; _fsVista = null;
+  anunciar('Tela cheia fechada.');
+}
+
+function raioLazyRender(vista, Z){
+  const painel = document.getElementById('raio-painel-'+vista+'-'+Z);
+  if(!painel || painel.dataset.rendered) return;
+  painel.dataset.rendered = '1';
+
+  const atomCor  = painel.dataset.cor  || '#00e5ff';
+  const atomGlow = painel.dataset.glow || 'rgba(0,229,255,0.5)';
+  const elData   = JSON.parse(painel.dataset.el || '{}');
+  const Z_num    = parseInt(painel.dataset.z) || Z;
+  const sub      = ultimoSubnivel(Z_num);
+
+  // find el object from all arrays
+  const allEls = [...elementosBase, ...lantanideos, ...actinideos];
+  const el     = allEls.find(e=>e.numero===Z_num) || elData;
+
+  const fsBar = `<div class="painel-fullscreen-bar">
+    <button class="painel-fullscreen-btn" aria-label="Expandir para tela cheia"
+            onclick="abrirFullscreen('${vista}','${Z}')">⛶ Tela cheia</button>
+  </div>`;
+
+  if(vista === 'grade'){
+    const dados      = RAIO[Z_num];
+    const tipoKey    = dados ? dados.t : null;
+    const atomCor2   = sub ? corAtomo(sub.bloco, atomCor) : atomCor;
+    const ccHex      = atomCor;
+    const allEls2    = [...elementosBase, ...lantanideos, ...actinideos];
+    const { mesmoPer, mesmoGrp } = vizinhosRaio(Z_num, el, allEls2);
+    function esferaGrade(e, isAtual){
+      const r = RAIO[e.numero];
+      if(!r) return '';
+      const subE  = ultimoSubnivel(e.numero);
+      const corE  = subE ? corAtomo(subE.bloco, getCatColorHex(e.cat)) : getCatColorHex(e.cat);
+      const h6    = corE.replace('#','');
+      const glowE = h6.length>=6
+        ? `rgba(${parseInt(h6.slice(0,2),16)},${parseInt(h6.slice(2,4),16)},${parseInt(h6.slice(4,6),16)},0.4)`
+        : 'rgba(136,136,136,0.4)';
+      const d     = Math.round(14+(r.r/RAIO_MAX_PM)*46);
+      const bord  = isAtual ? `outline:2px solid var(--accent);outline-offset:2px;` : '';
+      return `<div class="raio-grade-item">
+        <div class="raio-grade-esfera" style="width:${d}px;height:${d}px;--esfera-cor:${corE};--esfera-glow:${glowE};${bord}"
+             aria-label="${e.nome}: ${r.r} pm"></div>
+        <span class="raio-grade-sim" style="color:${isAtual?'var(--accent)':'var(--text-dim)'}">${e.simbolo}</span>
+        <span class="raio-grade-val">${r.r} pm</span>
+      </div>`;
+    }
+    function blocoGrade(lista, atual, titulo, seta){
+      if(!lista.length) return '';
+      const todos = [...lista, atual].sort((a,b)=>a.grupo-b.grupo||((a.periodo||0)-(b.periodo||0)));
+      const items = todos.map(e=>esferaGrade(e, e.numero===Z_num)).join('');
+      return `<div class="raio-grade-wrap visivel">
+        <span class="raio-grade-titulo">${titulo}</span>
+        <div class="raio-grade">${items}</div>
+        <div class="raio-grade-setas"><span>${seta}</span></div>
+      </div>`;
+    }
+    const gradePer = blocoGrade(mesmoPer, el, `Período ${(el.periodo||0)<=7?el.periodo:(el.cat==='Lantanídeo'?6:7)} — raio diminui →`, '← raio maior &nbsp;&nbsp;&nbsp; raio menor →');
+    const gradeGrp = blocoGrade(mesmoGrp, el, `Grupo ${el.grupo} — raio aumenta ↓`, '↑ raio menor &nbsp;&nbsp;&nbsp; raio maior ↓');
+    painel.innerHTML = fsBar + `<div id="raio-grade-container-${Z_num}">${gradePer}${gradeGrp}</div>`;
+
+  } else if(vista === 'bohr'){
+    painel.innerHTML = fsBar + renderBohr(Z_num, el, sub, atomCor, atomGlow);
+
+  } else if(vista === 'lewis'){
+    painel.innerHTML = fsBar + renderLewis(Z_num, el, sub, atomCor, atomGlow);
+
+  } else if(vista === 'nuvem'){
+    painel.innerHTML = fsBar + renderNuvem(Z_num, el, sub, atomCor, atomGlow);
+    setTimeout(()=>{ nuvemIniciarCanvas(Z_num); }, 30);
+  }
+}
+
 function raioVista(vista, Z, btnEl){
-  const ids    = ['dados','grade','bohr','lewis'];
+  const ids    = ['dados','grade','bohr','lewis','nuvem'];
   const paineis = ids.map(id => document.getElementById('raio-painel-'+id+'-'+Z));
   const btns    = ids.map(id => document.getElementById('rbtn-'+id+'-'+Z));
   ids.forEach((id, i) => {
@@ -1289,6 +1600,17 @@ function raioVista(vista, Z, btnEl){
       btns[i].setAttribute('aria-pressed', String(active));
     }
   });
+  if(vista !== 'dados'){
+    raioLazyRender(vista, Z);
+  }
+  if(vista === 'nuvem'){
+    // nuvem canvas is initialized inside raioLazyRender on first call,
+    // but if already rendered, re-trigger draw (canvas may have been resized)
+    const painel = document.getElementById('raio-painel-nuvem-'+Z);
+    if(painel && painel.dataset.rendered){
+      setTimeout(()=>{ nuvemIniciarCanvas(Z); }, 20);
+    }
+  }
 }
 function bohrModo(modo, Z){
   const svgVal  = document.getElementById('bohr-svg-val-'+Z);
@@ -1470,11 +1792,9 @@ function criarLegendaGridCell(container){
   catCell.className = 'legend-grid-cats';
   catCell.setAttribute('role','group');
   catCell.setAttribute('aria-label','Filtros por categoria');
-
   const lcLbl = document.createElement('div');
   lcLbl.className='legend-section-label'; lcLbl.id='lblCats'; lcLbl.textContent='Categorias';
   catCell.appendChild(lcLbl);
-
   const gridCat = document.createElement('div');
   gridCat.className='legend-cats';
   gridCat.setAttribute('role','group'); gridCat.setAttribute('aria-labelledby','lblCats');
@@ -1490,11 +1810,9 @@ function criarLegendaGridCell(container){
   stCell.className='legend-grid-states';
   stCell.setAttribute('role','group');
   stCell.setAttribute('aria-label','Filtros por estado físico');
-
   const leLbl = document.createElement('div');
   leLbl.className='legend-section-label'; leLbl.id='lblStates'; leLbl.textContent='Estado Físico (25 °C · 1 atm)';
   stCell.appendChild(leLbl);
-
   const gridEst = document.createElement('div');
   gridEst.className='legend-states';
   gridEst.setAttribute('role','group'); gridEst.setAttribute('aria-labelledby','lblStates');
@@ -1564,10 +1882,16 @@ document.getElementById('guiaOverlay').addEventListener('keydown', e => {
   if(e.shiftKey){ if(document.activeElement===first){e.preventDefault();last.focus();} }
   else          { if(document.activeElement===last) {e.preventDefault();first.focus();} }
 });
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape' && document.getElementById('fullscreen-overlay')?.classList.contains('aberto')) fecharFullscreen();
+});
+document.getElementById('fullscreen-overlay')?.addEventListener('click', e => {
+  if(e.target === document.getElementById('fullscreen-overlay')) fecharFullscreen();
+});
 
 function criarRotulos(c){
   for(let g=1;g<=18;g++){const d=document.createElement('div');d.className='family-label';d.style.cssText=`grid-column:${g+1};grid-row:1;`;d.textContent=g;d.setAttribute('aria-label',`Grupo ${g}`);c.appendChild(d);}
-  for(let p=1;p<=7;p++){const d=document.createElement('div');d.className='period-label';d.style.cssText=`grid-column:1;grid-row:${p+2};`;d.textContent=p;d.setAttribute('aria-label',`Período ${p}`);c.appendChild(d);}
+  for(let p=1;p<=7;p++){const d=document.createElement('div');d.className='period-label';d.style.cssText=`grid-column:1;grid-row:${p+1};`;d.textContent=p;d.setAttribute('aria-label',`Período ${p}`);c.appendChild(d);}
 }
 function criarBotaoSerie(serie){
   const cfgs={
@@ -1582,7 +1906,7 @@ function criarBotaoSerie(serie){
   div.setAttribute('aria-label',`${serie==='lantanideos'?'Lantanídeos':'Actinídeos'} — elementos ${cfg.numero}. Clique simples para expandir ou recolher. Clique duplo para abrir os detalhes.`);
   div.style.cssText=`grid-column:${cfg.grupo+1};grid-row:${cfg.periodo+1};--cat-color:${cc}`;
   div.innerHTML=
-    `<div class="el-number" aria-hidden="true" style="font-size:calc(0.32rem * var(--font-scale))">${cfg.numero}</div>`+
+    `<div class="el-number" aria-hidden="true" style="font-size:calc(0.4rem * var(--font-scale))">${cfg.numero}</div>`+
     `<div class="el-symbol" aria-hidden="true" style="color:${cc};font-size:calc(0.52vw * var(--font-scale));line-height:1.1">${cfg.simbolo}</div>`+
     `<div class="el-name"   aria-hidden="true">${cfg.nome}</div>`+
     `<span class="toggle-arrow" aria-hidden="true" style="color:${cc}">&#9660;</span>`;
