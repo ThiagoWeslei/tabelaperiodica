@@ -133,5 +133,23 @@
 </div>
 
 <script src="script.js"></script>
+
+<!-- VLibras: Plugin oficial de acessibilidade em Língua Brasileira de Sinais (Libras) -->
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper>
+    <div class="vw-plugin-top-wrapper"></div>
+  </div>
+</div>
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js';
+    script.onload = function() {
+      new window.VLibras.Widget('https://vlibras.gov.br/app');
+    };
+    document.body.appendChild(script);
+  })();
+</script>
 </body>
 </html>
