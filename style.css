@@ -213,7 +213,16 @@ body {
 .element:hover, .element:focus-visible { transform:scale(1.15); background:var(--bg-hover); box-shadow:0 0 12px rgba(0,229,255,.3); z-index:20; border-color:var(--accent); outline:2px solid var(--accent); outline-offset:2px; }
 .element.selected { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 10%,var(--bg-card)); box-shadow:0 0 10px rgba(0,229,255,.3); }
 .element.dim { opacity:.1; pointer-events:none; }
-@media (prefers-reduced-motion: reduce) { .element,.legend-item,.toolbar-btn,.modal-overlay { transition:none!important; animation:none!important; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition:none!important;
+    animation:none!important;
+    scroll-behavior:auto!important;
+  }
+  .element:hover, .element:focus-visible { transform:none!important; }
+  .modal, .guia-modal, .fullscreen-modal { transform:none!important; }
+  .serie-toggle .toggle-arrow { transition:none!important; }
+}
 .el-number { font-family:'Share Tech Mono',monospace; font-size:clamp(calc(7px * var(--font-scale)),calc(0.75vw * var(--font-scale)),calc(13px * var(--font-scale))); color:var(--text-dim); align-self:flex-start; line-height:1.4; padding-left:4px; }
 .el-symbol { font-family:'Rajdhani',sans-serif; font-size:clamp(calc(13px * var(--font-scale)),calc(1.5vw * var(--font-scale)),calc(28px * var(--font-scale))); font-weight:700; line-height:1; margin:1px 0; }
 .el-name   { font-size:clamp(calc(7px * var(--font-scale)),calc(0.6vw * var(--font-scale)),calc(12px * var(--font-scale))); color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; text-align:center; line-height:1.15; }
@@ -482,7 +491,7 @@ body {
 .fs-nuvem-wrap .nuvem-leg-row { font-size:0.85rem; gap:7px; }
 .fs-nuvem-wrap .nuvem-leg-dot { width:11px; height:11px; }
 
-/ ===== NUVEM ELETRÔNICA ===== /
+/* ===== NUVEM ELETRÔNICA ===== */
 .nuvem-wrap { display:flex; flex-direction:column; gap:calc(8px * var(--font-scale)); }
 .nuvem-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
 .nuvem-titulo { font-size:calc(0.65rem * var(--font-scale)); font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-main); }
@@ -508,3 +517,186 @@ body {
 .nuvem-leg-dot { width:calc(8px * var(--font-scale)); height:calc(8px * var(--font-scale)); border-radius:50%; flex-shrink:0; }
 .nuvem-leg-sub { font-family:'Share Tech Mono',monospace; font-weight:700; color:var(--text-main); }
 .nuvem-leg-e   { color:var(--text-dim); }
+/* =====================================================================
+   ACESSIBILIDADE — Adições
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. DALTONISMO — paletas de cores alternativas
+   A cor sozinha não basta para distinguir categorias (WCAG 1.4.1).
+   O modo daltônico (data-daltonico="protanopia|deuteranopia|tritanopia")
+   substitui as variáveis --cat-* por paletas otimizadas para cada tipo,
+   escolhidas para maximizar a separação perceptual no eixo de cor que
+   o tipo de daltonismo consegue distinguir.
+   As cores das categorias nos cards e na legenda usam estas variáveis,
+   então a troca se propaga automaticamente por toda a interface.
+   --------------------------------------------------------------------- */
+
+/* Protanopia (sem cones L/vermelho) e Deuteranopia (sem cones M/verde):
+   confusão vermelho↔verde. Paleta separa no eixo azul↔amarelo↔laranja. */
+[data-daltonico="protanopia"] {
+  --cat-alcalino:    #d55e00;  /* laranja-queimado */
+  --cat-alcalino-t:  #e69f00;  /* âmbar */
+  --cat-lantanideo:  #785ef0;  /* violeta */
+  --cat-actinideo:   #648fff;  /* azul-índigo */
+  --cat-transicao:   #f0e442;  /* amarelo */
+  --cat-representat: #56b4e9;  /* azul-céu */
+  --cat-naometal:    #009e9e;  /* teal */
+  --cat-halogeno:    #0072b2;  /* azul-forte */
+  --cat-gasNobre:    #cc79a7;  /* rosa-malva */
+  --cat-semimetal:   #b0b0b0;  /* cinza-claro */
+}
+[data-daltonico="deuteranopia"] {
+  --cat-alcalino:    #d55e00;
+  --cat-alcalino-t:  #e69f00;
+  --cat-lantanideo:  #785ef0;
+  --cat-actinideo:   #648fff;
+  --cat-transicao:   #f0e442;
+  --cat-representat: #56b4e9;
+  --cat-naometal:    #009e9e;
+  --cat-halogeno:    #0072b2;
+  --cat-gasNobre:    #cc79a7;
+  --cat-semimetal:   #b0b0b0;
+}
+/* Tritanopia (sem cones S/azul): confusão azul↔verde e amarelo↔rosa.
+   Paleta separa no eixo vermelho↔ciano. */
+[data-daltonico="tritanopia"] {
+  --cat-alcalino:    #d92b2b;  /* vermelho */
+  --cat-alcalino-t:  #ff6699;  /* rosa */
+  --cat-lantanideo:  #00b3b3;  /* ciano */
+  --cat-actinideo:   #007a7a;  /* ciano-escuro */
+  --cat-transicao:   #e60073;  /* magenta */
+  --cat-representat: #00d0d0;  /* ciano-claro */
+  --cat-naometal:    #d92b2b;  /* vermelho (reutiliza eixo) */
+  --cat-halogeno:    #8c1a1a;  /* vermelho-escuro */
+  --cat-gasNobre:    #006666;  /* teal-escuro */
+  --cat-semimetal:   #b0b0b0;  /* cinza */
+}
+
+.toolbar-btn[aria-pressed="true"]#btnDaltonico { background: var(--accent); color: #000; }
+
+/* Contorno na bolinha da legenda — ajuda em qualquer paleta */
+.legend-dot {
+  border: 1px solid var(--text-main);
+  position: relative;
+}
+
+/* ---------------------------------------------------------------------
+   2. SUPERSCRIPT acessível em configuração eletrônica
+   <sup> real com aria; o número visual fica, o leitor lê o aria-label
+   --------------------------------------------------------------------- */
+.ec-orbital sup, .ec-full sup { font-size: 0.7em; }
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------------
+   3. prefers-reduced-motion — também desativa transições do canvas/svg
+   (regra principal já adicionada acima; reforço de segurança aqui)
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .raio-circulo, .raio-barra-fill, .raio-grade-esfera,
+  .bohr-camada-bar-fill, .nuvem-canvas { transition: none !important; }
+}
+
+/* ---------------------------------------------------------------------
+   4. RESPONSIVIDADE / MOBILE
+   Em telas estreitas a grade de 18 colunas fica ilegível. Reduzimos
+   gaps e fontes; abaixo de 640px ativamos rolagem horizontal controlada
+   com largura mínima, preservando a estrutura da tabela.
+   --------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  #periodic-table { gap: 2px; }
+  .footer-fonte-item { font-size: 9px; }
+}
+@media (max-width: 760px) {
+  body { height: auto; min-height: 100vh; overflow: auto; }
+  .page-wrapper { overflow: visible; }
+  .main-content { overflow-x: auto; overflow-y: visible; padding: 6px 6px 0; -webkit-overflow-scrolling: touch; }
+  #periodic-table {
+    min-width: 720px;       /* garante que os cards não fiquem ilegíveis */
+    grid-template-rows: 16px repeat(7, minmax(46px, 1fr)) 5px minmax(46px,1fr) minmax(46px,1fr);
+  }
+  .tabela-scroll-hint { display: block; }
+  /* Modal ocupa quase toda a tela em mobile */
+  .modal { width: 96vw; max-height: 94vh; }
+  .modal-symbol { font-size: calc(3rem * var(--font-scale)); }
+  .toolbar { flex-wrap: wrap; padding: 6px 8px; gap: 4px; }
+  /* Evita que o widget VLibras cubra a toolbar */
+  div[vw] { z-index: 1000; }
+}
+@media (max-width: 480px) {
+  .modal-top-row { flex-wrap: wrap; }
+  .footer-fontes { gap: 2px 8px; }
+  .guia-table th, .guia-table td { font-size: calc(0.78rem * var(--font-scale)); padding: 4px 6px; }
+}
+
+/* Dica de rolagem horizontal (só aparece em mobile, controlada por media query) */
+.tabela-scroll-hint {
+  display: none;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  text-align: center;
+  padding: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---------------------------------------------------------------------
+   5. FOCO reforçado — visível também em alto contraste / forced-colors
+   --------------------------------------------------------------------- */
+@media (forced-colors: active) {
+  :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px; }
+  .element::before { forced-color-adjust: none; }
+}
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Alvos de toque com tamanho mínimo recomendado (WCAG 2.5.5 / 2.5.8) */
+.toolbar-btn, .legend-item, .raio-vbtn, .nuvem-select { min-height: 28px; }
+@media (pointer: coarse) {
+  .toolbar-btn { min-height: 40px; }
+  .legend-item { min-height: 36px; }
+  .modal-close-btn, .guia-close, .fullscreen-close { min-width: 44px; min-height: 44px; }
+}
+
+/* ---------------------------------------------------------------------
+   6. MODO LEITURA SIMPLES (acessibilidade cognitiva)
+   Quando data-simple="on": aumenta espaçamento/tamanho de texto, oculta
+   os blocos técnicos densos (.tecnico-avancado), e simplifica os cards
+   da tabela principal escondendo a massa atômica (detalhe secundário).
+   --------------------------------------------------------------------- */
+[data-simple="on"] .info-card p,
+[data-simple="on"] .modal-body { line-height: 1.9; letter-spacing: .01em; }
+[data-simple="on"] .tecnico-avancado { display: none !important; }
+[data-simple="on"] .raio-tend-card-texto { font-size: calc(0.92rem * var(--font-scale)); }
+.toolbar-btn[aria-pressed="true"]#btnSimple { background: var(--accent); color: #000; }
+
+/* Efeitos VISÍVEIS na tabela principal */
+[data-simple="on"] .el-mass { display: none; }          /* esconde massa atômica nos cards */
+[data-simple="on"] .el-symbol { font-size: clamp(calc(15px * var(--font-scale)),calc(1.7vw * var(--font-scale)),calc(32px * var(--font-scale))); }
+[data-simple="on"] .el-name { font-weight: 700; }
+[data-simple="on"] .info-card p { font-size: calc(1.08rem * var(--font-scale)); }
+[data-simple="on"] .modal-name { font-size: calc(1.6rem * var(--font-scale)); }
+
+/* Faixa de confirmação visível enquanto o modo está ativo */
+[data-simple="on"] .main-content::before {
+  content: "📖 Modo de leitura simples ativo — detalhes técnicos ocultados";
+  display: block;
+  background: var(--accent);
+  color: #000;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: clamp(11px, 1vw, 14px);
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
