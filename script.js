@@ -27,6 +27,71 @@ btnContrast.addEventListener('click', () => {
   anunciar(isHigh ? 'Alto contraste desativado' : 'Alto contraste ativado');
 });
 
+const btnSimple = document.getElementById('btnSimple');
+if (btnSimple) {
+  btnSimple.addEventListener('click', () => {
+    const isOn = document.documentElement.getAttribute('data-simple') === 'on';
+    document.documentElement.setAttribute('data-simple', isOn ? '' : 'on');
+    btnSimple.setAttribute('aria-pressed', String(!isOn));
+    anunciar(isOn
+      ? 'Modo de leitura simples desativado'
+      : 'Modo de leitura simples ativado. Texto mais espaçado e detalhes técnicos avançados ocultados.');
+  });
+}
+
+const btnDaltonico = document.getElementById('btnDaltonico');
+if (btnDaltonico) {
+  const CICLO = ['', 'protanopia', 'deuteranopia', 'tritanopia'];
+  const ROTULO = {
+    '':             '🎨 Daltônico',
+    'protanopia':   '🎨 Protanopia',
+    'deuteranopia': '🎨 Deuteranopia',
+    'tritanopia':   '🎨 Tritanopia'
+  };
+  const NOME = {
+    'protanopia':   'Protanopia (dificuldade com vermelho)',
+    'deuteranopia': 'Deuteranopia (dificuldade com verde)',
+    'tritanopia':   'Tritanopia (dificuldade com azul)'
+  };
+  btnDaltonico.addEventListener('click', () => {
+    const atual = document.documentElement.getAttribute('data-daltonico') || '';
+    const prox  = CICLO[(CICLO.indexOf(atual) + 1) % CICLO.length];
+    document.documentElement.setAttribute('data-daltonico', prox);
+    btnDaltonico.textContent = ROTULO[prox];
+    btnDaltonico.setAttribute('aria-pressed', String(prox !== ''));
+    redesenharCores();
+    anunciar(prox === ''
+      ? 'Cores normais restauradas.'
+      : `Paleta para ${NOME[prox]} ativada.`);
+  });
+}
+// Reaplica as cores de categoria em toda a tabela e legenda sem recriar o DOM
+function redesenharCores(){
+  document.querySelectorAll('.element[data-cat]').forEach(div=>{
+    const cat = div.dataset.cat;
+    const cc  = getCatColorHex(cat) || '#888';
+    div.style.setProperty('--cat-color', cc);
+    const sym = div.querySelector('.el-symbol');
+    if(sym) sym.style.color = cc;
+  });
+  document.querySelectorAll('.serie-toggle').forEach(div=>{
+    const cc = getCatColorHex(div.dataset.cat) || '#888';
+    div.style.setProperty('--cat-color', cc);
+    const sym = div.querySelector('.el-symbol');
+    if(sym) sym.style.color = cc;
+    const arrow = div.querySelector('.toggle-arrow');
+    if(arrow) arrow.style.color = cc;
+  });
+  document.querySelectorAll('.legend-item[data-cat] .legend-dot').forEach(dot=>{
+    const cat = dot.closest('.legend-item').dataset.cat;
+    dot.style.background = getCatColorHex(cat) || '#888';
+  });
+  // Se um filtro de categoria estiver ativo, reaplica sua cor de destaque
+  document.querySelectorAll('.legend-item[data-cat].ativo').forEach(b=>{
+    setItemAtivo(b, getCatColorHex(b.dataset.cat) || '#00e5ff');
+  });
+}
+
 btnFontUp.addEventListener('click', () => {
   if (fontScale < MAX_SCALE) { aplicarEscala(fontScale + STEP); anunciar(`Fonte: ${Math.round(fontScale*100)}%`); }
 });
@@ -141,9 +206,54 @@ const CAT_COLOR_HEX_LIGHT = {
   'Gás nobre':             '#006152'
 };
 function getCatColorHex(cat){
+  const dalt = document.documentElement.getAttribute('data-daltonico');
+  if(dalt && CAT_COLOR_HEX_DALT[dalt]){
+    return CAT_COLOR_HEX_DALT[dalt][cat] || '#888';
+  }
   const isLight = document.documentElement.getAttribute('data-theme')==='light';
   return (isLight ? CAT_COLOR_HEX_LIGHT : CAT_COLOR_HEX_DARK)[cat] || '#888';
 }
+// Paletas otimizadas para os três tipos de daltonismo.
+// Protanopia/Deuteranopia (confusão vermelho↔verde): separação no eixo azul↔amarelo.
+// Tritanopia (confusão azul↔verde): separação no eixo vermelho↔ciano.
+const CAT_COLOR_HEX_DALT = {
+  protanopia: {
+    'Metal alcalino':        '#d55e00',
+    'Metal alcalino-terroso':'#e69f00',
+    'Lantanídeo':            '#785ef0',
+    'Actinídeo':             '#648fff',
+    'Metal de transição':    '#f0e442',
+    'Metal representativo':  '#56b4e9',
+    'Semimetal':             '#b0b0b0',
+    'Não-metal':             '#009e9e',
+    'Halogênio':             '#0072b2',
+    'Gás nobre':             '#cc79a7'
+  },
+  deuteranopia: {
+    'Metal alcalino':        '#d55e00',
+    'Metal alcalino-terroso':'#e69f00',
+    'Lantanídeo':            '#785ef0',
+    'Actinídeo':             '#648fff',
+    'Metal de transição':    '#f0e442',
+    'Metal representativo':  '#56b4e9',
+    'Semimetal':             '#b0b0b0',
+    'Não-metal':             '#009e9e',
+    'Halogênio':             '#0072b2',
+    'Gás nobre':             '#cc79a7'
+  },
+  tritanopia: {
+    'Metal alcalino':        '#d92b2b',
+    'Metal alcalino-terroso':'#ff6699',
+    'Lantanídeo':            '#00b3b3',
+    'Actinídeo':             '#007a7a',
+    'Metal de transição':    '#e60073',
+    'Metal representativo':  '#00d0d0',
+    'Semimetal':             '#b0b0b0',
+    'Não-metal':             '#d92b2b',
+    'Halogênio':             '#8c1a1a',
+    'Gás nobre':             '#006666'
+  }
+};
 const CAT_COLOR = CAT_COLOR_VAR;
 const CONFIG_EC = {
   // Período 1
@@ -889,7 +999,7 @@ function renderRaio(Z, el, ccHex){
       vazio:         'raio-status-vazio'
     }[sub.status] || 'raio-status-parcial';
     return `
-    <div class="raio-sub-box">
+    <div class="raio-sub-box tecnico-avancado">
       <span class="raio-sub-titulo">Camada de valência — último subnível</span>
       <span class="raio-sub-valor" aria-label="Subnível ${sub.sub}: ${sub.elCount} de ${sub.maxEl} elétrons">${sub.sub} &nbsp;·&nbsp; ${sub.elCount}/${sub.maxEl} e⁻</span>
       <span class="raio-sub-tipo">
@@ -899,7 +1009,7 @@ function renderRaio(Z, el, ccHex){
     </div>`;
   })() : '';
   const barraHtml = rPm ? `
-    <div class="raio-barra-wrap">
+    <div class="raio-barra-wrap tecnico-avancado">
       <span class="raio-barra-titulo">Escala relativa — referência: Fr = ${RAIO_MAX_PM} pm</span>
       <div class="raio-barra-track" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Raio relativo a Fr: ${pct}%">
         <div class="raio-barra-fill" style="width:${pct}%;--atom-color:${atomCor};--atom-color-glow:${atomGlow}"></div>
@@ -1119,8 +1229,10 @@ function renderBohr(Z, el, sub, atomCor, atomGlow, escala){
     return `<svg viewBox="0 0 ${SVG_W.toFixed(0)} ${SVG_H.toFixed(0)}"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Diagrama de Bohr — ${elVal} elétron${elVal>1?'s':''} de valência na camada ${nomeVal}"
+      aria-labelledby="bohr-t-${Z}-${modo} bohr-d-${Z}-${modo}"
       style="width:100%;height:auto;display:block;">
+      <title id="bohr-t-${Z}-${modo}">Diagrama de Bohr de ${el.nome||el.simbolo||''}</title>
+      <desc id="bohr-d-${Z}-${modo}">Modelo de Bohr mostrando ${nCamadas} ${nCamadas===1?'camada eletrônica':'camadas eletrônicas'} ao redor do núcleo. A camada de valência ${nomeVal} contém ${elVal} ${elVal===1?'elétron':'elétrons'}.</desc>
       ${defs}
       ${p.join('\n      ')}
     </svg>`;
@@ -1261,8 +1373,10 @@ function renderLewis(Z, el, sub, atomCor, atomGlow, escala){
   const svgLewis = `<svg viewBox="0 0 ${SZ} ${SZ}"
     xmlns="http://www.w3.org/2000/svg"
     role="img"
-    aria-label="Diagrama de Lewis do ${el.nome||el.simbolo}: ${eValTotal} elétrons de valência — ${sub.statusLabel}"
+    aria-labelledby="lewis-t-${Z} lewis-d-${Z}"
     style="width:100%;height:auto;display:block;max-width:${maxW}px;">
+    <title id="lewis-t-${Z}">Diagrama de Lewis de ${el.nome||el.simbolo||''}</title>
+    <desc id="lewis-d-${Z}">Estrutura de Lewis mostrando o símbolo ${el.simbolo||''} ao centro, rodeado por ${eValTotal} ${eValTotal===1?'elétron de valência':'elétrons de valência'} representados como pontos. Estado de preenchimento: ${sub.statusLabel}.</desc>
     ${defs}
     ${parts.join('\n    ')}
   </svg>`;
@@ -1314,21 +1428,24 @@ function renderNuvem(Z, el, sub, atomCor, atomGlow){
     });
   }
   const orbitaisJSON = JSON.stringify(orbitaisInfo);
+  const resumoOrbitais = orbitaisInfo.map(o=>`${o.sub} com ${o.e} ${o.e===1?'elétron':'elétrons'}`).join(', ');
   return `<div class="nuvem-wrap">
     <div class="nuvem-header">
-      <span class="nuvem-titulo">Nuvem Eletrônica de Probabilidade</span>
+      <span class="nuvem-titulo" id="nuvem-titulo-${Z}">Nuvem Eletrônica de Probabilidade</span>
       <div class="nuvem-controles" role="group" aria-label="Controles da nuvem">
-        <label class="nuvem-label">Orbital:</label>
-        <select class="nuvem-select" id="nuvem-orb-${Z}" onchange="nuvemMudarOrbital(${Z})">
+        <label class="nuvem-label" for="nuvem-orb-${Z}">Orbital:</label>
+        <select class="nuvem-select" id="nuvem-orb-${Z}" aria-label="Selecionar orbital a exibir" onchange="nuvemMudarOrbital(${Z})">
           <option value="all">Todos</option>
           ${orbitaisInfo.map(o=>`<option value="${o.sub}">${o.sub} (${o.e} e⁻)</option>`).join('')}
         </select>
       </div>
     </div>
     <canvas id="nuvem-canvas-${Z}" class="nuvem-canvas"
-            aria-label="Nuvem eletrônica de probabilidade do ${el.nome}"
+            role="img"
+            aria-label="Representação artística da nuvem eletrônica de probabilidade do ${el.nome}. Distribuição por orbitais: ${resumoOrbitais}. A densidade de pontos indica a probabilidade de encontrar elétrons em cada região."
             data-z="${Z}" data-orbitais='${orbitaisJSON}'
             data-cor="${atomCor}" data-glow="${atomGlow}"></canvas>
+    <p class="sr-only">Descrição textual: a nuvem eletrônica do ${el.nome} é formada pelos orbitais ${resumoOrbitais}. Cada cor na legenda abaixo corresponde a um tipo de orbital.</p>
     <div class="nuvem-legenda" id="nuvem-legenda-${Z}"></div>
   </div>`;
 }
@@ -1723,6 +1840,20 @@ modalOverlay.addEventListener('keydown',e=>{
   if(e.shiftKey){if(document.activeElement===first){e.preventDefault();last.focus();}}
   else{if(document.activeElement===last){e.preventDefault();first.focus();}}
 });
+function verbalizarConfig(notacao){
+  // Converte "1s² 2s² 2p⁶" -> "1s ao quadrado, 2s ao quadrado, 2p elevado a 6"
+  const sup2n = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'};
+  return notacao.split(/\s+/).map(termo=>{
+    let base = '', exp = '';
+    for(const ch of termo){
+      if(sup2n[ch] !== undefined) exp += sup2n[ch]; else base += ch;
+    }
+    if(!exp) return base;
+    if(exp === '1') return `${base} com 1 elétron`;
+    if(exp === '2') return `${base} com 2 elétrons`;
+    return `${base} com ${exp} elétrons`;
+  }).join(', ');
+}
 function renderConfig(Z){
   const notacao=CONFIG_EC[Z];
   if(!notacao){
@@ -1734,8 +1865,8 @@ function renderConfig(Z){
     : '';
   const dist=distribuirEletrons(Z);
   const camadas=porCamada(dist);
-  let html=`<div class="ec-title">Notação eletrônica</div>${aviso}<div class="ec-full" aria-label="Configuração eletrônica: ${notacao.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g,c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c).toString())}">${notacao}</div>
-<div class="ec-title" style="margin-top:6px">Por camada (Diagrama de Pauling)</div><div class="ec-camadas">`;
+  let html=`<div class="ec-title">Notação eletrônica</div>${aviso}<div class="ec-full" role="text" aria-label="Configuração eletrônica: ${verbalizarConfig(notacao)}">${notacao}</div>
+<div class="ec-title tecnico-avancado" style="margin-top:6px">Por camada (Diagrama de Pauling)</div><div class="ec-camadas tecnico-avancado">`;
   const nMax=Object.keys(camadas).length;
   for(let n=1;n<=nMax;n++){
     const nome=CAMADAS_NOME[n-1]||'?';
@@ -1744,7 +1875,8 @@ function renderConfig(Z){
       const tipo=sub[1];
       const col={s:'var(--orb-s)',p:'var(--orb-p)',d:'var(--orb-d)',f:'var(--orb-f)'}[tipo]||'var(--text-dim)';
       const exp=String(e).split('').map(d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[parseInt(d)]).join('');
-      return `<span class="ec-orbital" style="color:${col}" aria-label="${sub} com ${e} elétrons">${sub}${exp}</span>`;
+      const leitura = e===1 ? `${sub} com 1 elétron` : `${sub} com ${e} elétrons`;
+      return `<span class="ec-orbital" style="color:${col}" role="text" aria-label="${leitura}">${sub}${exp}</span>`;
     }).join(' ');
     html+=`<div class="ec-row"><span class="ec-camada-name" aria-label="Camada ${nome}">${nome}</span><div class="ec-orbitals">${orbs}</div></div>`;
   }
@@ -1998,3 +2130,11 @@ function renderizar(){
   criarLegendaBar();
 }
 renderizar();
+
+// Anúncio inicial de instruções para usuários de leitor de tela (atraso para
+// não competir com a leitura do título da página)
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    anunciar('Tabela periódica carregada. Use Tab para navegar até a tabela, depois as setas do teclado para mover entre os elementos e Enter para abrir os detalhes. Há botões de acessibilidade na barra de ferramentas: tamanho da fonte, tema, alto contraste e leitura simples.');
+  }, 800);
+});
