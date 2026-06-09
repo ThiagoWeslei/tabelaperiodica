@@ -16,7 +16,7 @@
   <div class="guia-modal">
     <div class="guia-header">
       <span class="guia-titulo" id="guiaTitulo">📖 Como ler um card de elemento</span>
-      <button class="guia-close" id="btnGuiaClose" aria-label="Fechar guia">✕</button>
+      <button class="guia-close" id="btnGuiaClose" aria-label="Fechar guia"><span aria-hidden="true">✕</span></button>
     </div>
     <div class="guia-body">
       <div class="guia-card-section">
@@ -34,7 +34,7 @@
         </thead>
         <tbody>
           <tr><td>Número atômico</td><td>Canto superior esquerdo</td><td><code>79</code></td><td>Número de prótons no núcleo. Identifica o elemento univocamente.</td></tr>
-          <tr><td>Símbolo</td><td>Centro</td><td><code>Au</code></td><td>Símbolo químico internacional (IUPAC). Do latim <i>Aurum</i>.</td></tr>
+          <tr><td>Símbolo</td><td>Centro</td><td><code>Au</code></td><td>Símbolo químico internacional (IUPAC). Do latim <i lang="la">Aurum</i>.</td></tr>
           <tr><td>Nome</td><td>Abaixo do símbolo</td><td><code>Ouro</code></td><td>Nome do elemento em português, conforme IUPAC 2021.</td></tr>
           <tr><td>Massa atômica</td><td>Linha inferior</td><td><code>196,97 u</code></td><td>Massa atômica padrão em unidades de massa atômica (u). Fonte: IUPAC CIAAW 2021.</td></tr>
           <tr><td>Estado físico</td><td>Canto superior direito</td><td>🧊 Sólido</td><td>Estado a 25 °C e 1 atm (IUPAC). 🧊 Sólido · 💧 Líquido · 💨 Gasoso · 🌀 Desconhecido.</td></tr>
@@ -55,7 +55,7 @@
   <div class="fullscreen-modal">
     <div class="fullscreen-header">
       <span class="fullscreen-title" id="fullscreen-title"></span>
-      <button class="fullscreen-close" id="btnFullscreenClose" aria-label="Fechar tela cheia" onclick="fecharFullscreen()">✕</button>
+      <button class="fullscreen-close" id="btnFullscreenClose" aria-label="Fechar tela cheia" onclick="fecharFullscreen()"><span aria-hidden="true">✕</span></button>
     </div>
     <div class="fullscreen-body" id="fullscreen-body"></div>
   </div>
@@ -75,7 +75,7 @@
           <div class="modal-meta"   id="modalMeta"></div>
           <div class="modal-badges" id="modalBadges"></div>
         </div>
-        <button class="modal-close-btn" id="btnClose" aria-label="Fechar detalhes do elemento">✕</button>
+        <button class="modal-close-btn" id="btnClose" aria-label="Fechar detalhes do elemento"><span aria-hidden="true">✕</span></button>
       </div>
     </div>
     <div class="modal-body">
@@ -105,6 +105,7 @@
 </div>
 <div class="page-wrapper">
   <main class="main-content" role="main">
+    <p class="tabela-scroll-hint" aria-hidden="true">↔ Arraste para o lado para ver toda a tabela</p>
     <div id="periodic-table"
       role="grid"
       aria-label="Tabela Periódica. Use as setas para navegar, Enter ou Espaço para ver detalhes."
@@ -119,15 +120,19 @@
     <button class="toolbar-btn" id="btnTheme"    aria-pressed="false" title="Alternar modo claro/escuro">🌙 Escuro</button>
     <div class="toolbar-sep" aria-hidden="true"></div>
     <button class="toolbar-btn" id="btnContrast" aria-pressed="false" title="Alto contraste (WCAG AAA)">⬛ Contraste</button>
+    <div class="toolbar-sep" aria-hidden="true"></div>
+    <button class="toolbar-btn" id="btnDaltonico" aria-pressed="false" title="Modo daltônico: alterna entre paletas para protanopia, deuteranopia e tritanopia">🎨 Daltônico</button>
+    <div class="toolbar-sep" aria-hidden="true"></div>
+    <button class="toolbar-btn" id="btnSimple" aria-pressed="false" title="Modo de leitura simples (texto mais espaçado, oculta detalhes técnicos avançados)">📖 Leitura simples</button>
   </div>
   <footer class="footer-fontes" role="contentinfo" aria-label="Fontes dos dados da tabela periódica">
     <span class="footer-fontes-titulo">Fontes:</span>
     <span class="footer-fonte-item"><b>Massas atômicas</b> — IUPAC Commission on Isotopic Abundances and Atomic Weights, <a href="https://www.ciaaw.org" target="_blank" rel="noopener">ciaaw.org</a> (2021)</span>
-    <span class="footer-fonte-item"><b>Raios covalentes</b> — Cordero et al., <i>Dalton Trans.</i> 2008, 2832; Pyykkö &amp; Atsumi, <i>Chem. Eur. J.</i> 15 (2009) 186</span>
-    <span class="footer-fonte-item"><b>Raios van der Waals</b> — Alvarez, <i>Dalton Trans.</i> 42 (2013) 8617</span>
+    <span class="footer-fonte-item"><b>Raios covalentes</b> — Cordero et al., <i lang="en">Dalton Trans.</i> 2008, 2832; Pyykkö &amp; Atsumi, <i lang="en">Chem. Eur. J.</i> 15 (2009) 186</span>
+    <span class="footer-fonte-item"><b>Raios van der Waals</b> — Alvarez, <i lang="en">Dalton Trans.</i> 42 (2013) 8617</span>
     <span class="footer-fonte-item"><b>Configurações eletrônicas</b> — NIST Atomic Spectra Database, <a href="https://physics.nist.gov/asd" target="_blank" rel="noopener">physics.nist.gov/asd</a></span>
     <span class="footer-fonte-item"><b>Categorias e nomenclatura</b> — IUPAC Red Book (2005) &amp; <a href="https://iupac.org/what-we-do/periodic-table-of-elements/" target="_blank" rel="noopener">IUPAC Periodic Table</a> (2021)</span>
-    <span class="footer-fonte-item"><b>Elementos sintéticos (Z ≥ 104)</b> — IUPAC/IUPAP Joint Working Party, <i>Pure Appl. Chem.</i> 88 (2016) 139</span>
+    <span class="footer-fonte-item"><b>Elementos sintéticos (Z ≥ 104)</b> — IUPAC/IUPAP Joint Working Party, <i lang="en">Pure Appl. Chem.</i> 88 (2016) 139</span>
     <span class="footer-fonte-item"><b>Feito por:</b> — Thiago Weslei & ClaudeAI</span>
   </footer>
 </div>
