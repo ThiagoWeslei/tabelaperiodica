@@ -285,7 +285,6 @@ body {
 .raio-esfera-label { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Share Tech Mono',monospace; font-size:calc(1.1rem * var(--font-scale)); font-weight:700; color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.8), 0 0 4px rgba(0,0,0,.6); pointer-events:none; white-space:nowrap; }
 .raio-grade-periodica { display:grid; grid-template-columns:repeat(7,1fr); gap:calc(6px * var(--font-scale)); background:var(--bg-deep); border:1px solid var(--border); border-radius:8px; padding:calc(8px * var(--font-scale)) calc(6px * var(--font-scale)); align-items:flex-end; padding:calc(6px * var(--font-scale)) 0; }
 .raio-grade-item { display:flex; flex-direction:column; align-items:center; gap:3px; }
-raio-grade-wrap {display: grid;}
 .raio-grade-esfera { border-radius:50%; background:radial-gradient(circle at 38% 35%, rgba(255,255,255,.22) 0%, var(--esfera-cor) 55%, rgba(0,0,0,.38) 100%); border:1.5px solid var(--esfera-cor); box-shadow:0 0 8px var(--esfera-glow); flex-shrink:0; }
 .raio-grade-sim { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:calc(0.75rem * var(--font-scale)); color:var(--text-main); line-height:1.1; }
 .raio-grade-val { font-family:'Share Tech Mono',monospace; font-size:calc(0.58rem * var(--font-scale)); color:var(--text-dim); line-height:1; }
@@ -339,275 +338,85 @@ raio-grade-wrap {display: grid;}
 .painel-fullscreen-btn:hover,.painel-fullscreen-btn:focus-visible { background:var(--bg-hover); color:var(--accent); border-color:var(--accent); outline:2px solid var(--accent); outline-offset:2px; }
 
 /* ===== FULLSCREEN OVERLAY ===== */
-/* ===== FULLSCREEN OVERLAY (PREENCHIMENTO MÁXIMO) ===== */
-.fullscreen-overlay { 
-  position: fixed; 
-  inset: 0; 
-  background: rgba(0,0,0,.97); 
-  backdrop-filter: blur(10px); 
-  display: flex; 
-  align-items: stretch; 
-  justify-content: stretch; 
-  z-index: 800; 
-  opacity: 0; 
-  visibility: hidden; 
-  transition: opacity .22s, visibility .22s; 
-}
-.fullscreen-overlay.aberto { 
-  opacity: 1; 
-  visibility: visible; 
-}
-.fullscreen-modal { 
-  background: var(--bg-panel); 
-  border: none; 
-  border-radius: 0; 
-  width: 100vw; 
-  height: 100vh; 
-  max-height: 100vh; 
-  display: flex; 
-  flex-direction: column; 
-  overflow: hidden; 
-  box-shadow: none; 
-  transform: scale(.98); 
-  transition: transform .22s cubic-bezier(.34,1.2,.64,1); 
-  flex: 1; 
-}
-.fullscreen-overlay.aberto .fullscreen-modal { 
-  transform: scale(1); 
-}
-.fullscreen-header { 
-  padding: 12px 24px; 
-  background: var(--bg-deep); 
-  border-bottom: 1px solid var(--border); 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  flex-shrink: 0; 
-  height: 56px; 
-}
-.fullscreen-title { 
-  font-family: 'Rajdhani', sans-serif; 
-  font-size: calc(1.1rem * var(--font-scale)); 
-  font-weight: 700; 
-  text-transform: uppercase; 
-  letter-spacing: .09em; 
-  color: var(--accent); 
-}
-.fullscreen-close { 
-  background: transparent; 
-  border: 1px solid var(--border); 
-  border-radius: 8px; 
-  color: var(--text-dim); 
-  width: 40px; 
-  height: 40px; 
-  cursor: pointer; 
-  font-size: 1.3rem; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  transition: all .15s; 
-}
-.fullscreen-close:hover, .fullscreen-close:focus-visible { 
-  background: var(--bg-hover); 
-  color: var(--text-main); 
-  border-color: var(--accent); 
-  outline: 2px solid var(--accent); 
-  outline-offset: 2px; 
-}
+.fullscreen-overlay { position:fixed; inset:0; background:rgba(0,0,0,.96); backdrop-filter:blur(8px); display:flex; align-items:stretch; justify-content:stretch; z-index:800; opacity:0; visibility:hidden; transition:opacity .22s, visibility .22s; }
+.fullscreen-overlay.aberto { opacity:1; visibility:visible; }
+.fullscreen-modal { background:var(--bg-panel); border:none; border-radius:0; width:100vw; height:100vh; max-height:100vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:none; transform:scale(.97); transition:transform .2s cubic-bezier(.34,1.2,.64,1); flex:1; }
+.fullscreen-overlay.aberto .fullscreen-modal { transform:scale(1); }
+.fullscreen-header { padding:10px 20px; background:var(--bg-deep); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; height:52px; }
+.fullscreen-title { font-family:'Rajdhani',sans-serif; font-size:calc(0.9rem * var(--font-scale)); font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--accent); }
+.fullscreen-close { background:transparent; border:1px solid var(--border); border-radius:7px; color:var(--text-dim); width:36px; height:36px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.fullscreen-close:hover,.fullscreen-close:focus-visible { background:var(--bg-hover); color:var(--text-main); border-color:var(--accent); outline:2px solid var(--accent); outline-offset:2px; }
 
-/* O segredo para cada wrapper ocupar espaço total e centralizar */
+/* REGRAS ALTERADAS: Corpo do Modal Fullscreen e Elementos Internos Centralizados */
 .fullscreen-body { 
-  flex: 1; 
-  overflow-y: auto; 
-  padding: 40px 32px; 
-  background: var(--bg-panel); 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
+  flex:1; 
+  overflow-y:auto; 
+  padding:40px 24px; 
+  background:var(--bg-panel); 
+  display:flex; 
+  flex-direction:column; 
+  align-items:center; 
+  justify-content:center; 
 }
+.fs-lewis-wrap { width:100%; display:flex; flex-direction:column; align-items:center; gap:16px; }
+.fs-lewis-wrap .lewis-svg-wrap { display:flex; justify-content:center; width:100%; }
+.fs-lewis-wrap .lewis-svg-wrap svg { width:auto !important; max-width:100%; height:auto; }
+.fs-lewis-wrap .lewis-legenda { max-width:600px; width:100%; padding:16px 20px; flex-direction:row; flex-wrap:wrap; gap:12px 24px; }
+.fs-lewis-wrap .lewis-legenda-row { font-size:1rem; gap:10px; }
+.fs-lewis-wrap .lewis-legenda-dot { width:12px; height:12px; }
+.fs-lewis-wrap .lewis-titulo { font-size:0.9rem; }
 
-/* ── 1. GRADE / RAIO ATÔMICO (TELA CHEIA EXPANDIDA) ── */
-.fs-grade-wrap, .fs-raio-wrap {
-  width: 100%;
-  max-width: 1200px; /* Expande para ocupar quase a tela inteira horizontalmente */
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* ── Nuvem fullscreen ── */
+.fs-nuvem-wrap { 
+  width:100%; 
+  display:flex; 
+  flex-direction:column; 
+  align-items:center; 
+  justify-content:center; 
+  gap:32px; 
 }
-.fs-grade-wrap .raio-grade-periodica {
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px; /* Aumenta o espaço entre os elementos da grade */
-  padding: 20px;
-  background: var(--bg-deep);
-  border-radius: 12px;
+.fs-nuvem-wrap .nuvem-wrap { 
+  width:100%; 
+  max-width:100%; 
+  display:flex; 
+  flex-direction:column; 
+  align-items:center; 
 }
-.fs-grade-wrap .raio-grade-esfera {
-  /* Altera a escala das esferas na grade para ficarem maiores em tela cheia */
-  transform: scale(1.3);
-  margin: 10px 0;
+.fs-nuvem-wrap .nuvem-header { 
+  width:100%; 
+  max-width:800px; 
+  display:flex; 
+  justify-content:center; 
+  text-align:center; 
 }
-.fs-grade-wrap .raio-grade-sim {
-  font-size: 1.1rem; /* Símbolo mais visível */
+.fs-nuvem-wrap .nuvem-titulo { 
+  font-size:1.3rem; 
+  text-align:center; 
 }
-.fs-grade-wrap .raio-grade-val {
-  font-size: 0.85rem;
+.fs-nuvem-canvas, .fs-nuvem-wrap .nuvem-canvas { 
+  width:min(calc(100vw - 80px), calc(100vh - 220px)) !important; 
+  height:min(calc(100vw - 80px), calc(100vh - 220px)) !important; 
+  max-width:520px !important; 
+  max-height:520px !important; 
+  aspect-ratio:1/1; 
+  display:block; 
+  margin:0 auto; 
+  border-radius:12px; 
 }
+.fs-nuvem-wrap .nuvem-legenda { max-width:800px; width:100%; flex-direction:row; flex-wrap:wrap; gap:8px 20px; padding:12px 16px; justify-content:center; }
+.fs-nuvem-wrap .nuvem-leg-row { font-size:0.85rem; gap:7px; }
+.fs-nuvem-wrap .nuvem-leg-dot { width:11px; height:11px; }
 
-/* ── 2. MODELO DE BOHR (TELA CHEIA EXPANDIDA) ── */
-.fs-bohr-wrap {
-  width: 100%;
-  max-width: 850px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-}
-.fs-bohr-wrap svg, .fs-bohr-wrap canvas, .fs-bohr-wrap .bohr-canvas {
-  width: min(calc(100vw - 80px), calc(100vh - 240px)) !important;
-  height: min(calc(100vw - 80px), calc(100vh - 240px)) !important;
-  max-width: 580px !important;
-  max-height: 580px !important;
-  aspect-ratio: 1/1;
-  display: block;
-  margin: 0 auto;
-}
-.fs-bohr-wrap .bohr-legenda {
-  max-width: 850px;
-  width: 100%;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 12px 28px;
-  padding: 16px 24px;
-  justify-content: center;
-  background: var(--bg-deep);
-  border-radius: 10px;
-}
-.fs-bohr-wrap .bohr-leg-row {
-  font-size: 0.95rem;
-}
+/* ===== NUVEM ELETRÔNICA ===== */
+.nuvem-wrap { display:flex; flex-direction:column; gap:calc(8px * var(--font-scale)); }
+.nuvem-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+.nuvem-titulo { font-size:calc(0.65rem * var(--font-scale)); font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-main); }
+.nuvem-canvas-container { display:flex; justify-content:center; padding:calc(4px * var(--font-scale)) 0; }
+.nuvem-canvas { background:var(--bg-deep); border:1px solid var(--border); border-radius:8px; width:100%; max-width:calc(280px * var(--font-scale)); height:auto; aspect-ratio:1/1; display:block; }
+.nuvem-legenda { display:flex; flex-direction:column; gap:5px; background:var(--bg-deep); border:1px solid var(--border); border-radius:6px; padding:calc(6px * var(--font-scale)) calc(10px * var(--font-scale)); }
+.nuvem-leg-row { display:flex; align-items:center; gap:6px; font-size:calc(0.72rem * var(--font-scale)); color:var(--text-dim); }
+.nuvem-leg-dot { width:calc(8px * var(--font-scale)); height:calc(8px * var(--font-scale)); border-radius:50%; flex-shrink:0; }
 
-/* ── 3. ESTRUTURA DE LEWIS (TELA CHEIA EXPANDIDA) ── */
-.fs-lewis-wrap {
-  width: 100%;
-  max-width: 850px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-}
-.fs-lewis-wrap .lewis-wrap {
-  width: 100%;
-  max-width: 100%;
-}
-.fs-lewis-wrap .lewis-header {
-  width: 100%;
-  max-width: 850px;
-  justify-content: center;
-  margin-bottom: 10px;
-}
-.fs-lewis-wrap .lewis-titulo {
-  font-size: 1.3rem;
-  color: var(--text-main);
-}
-.fs-lewis-wrap .lewis-svg-wrap {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding: 20px;
-  background: var(--bg-deep);
-  border-radius: 14px;
-  border: 1px solid var(--border);
-}
-.fs-lewis-wrap .lewis-svg-wrap svg {
-  width: auto !important;
-  max-width: 100%;
-  /* Força o símbolo de Lewis a ficar imponente */
-  height: min(320px, calc(100vh - 350px)); 
-}
-.fs-lewis-wrap .lewis-legenda {
-  max-width: 850px;
-  width: 100%;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 16px 32px;
-  justify-content: center;
-  padding: 16px;
-}
-.fs-lewis-wrap .lewis-legenda-row {
-  font-size: 1.1rem;
-  gap: 12px;
-}
-.fs-lewis-wrap .lewis-legenda-dot {
-  width: 14px;
-  height: 14px;
-}
-
-/* ── 4. NUVEM ELETRÔNICA & DISTRIBUIÇÃO (TELA CHEIA EXPANDIDA) ── */
-.fs-nuvem-wrap {
-  width: 100%;
-  max-width: 850px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-}
-.fs-nuvem-wrap .nuvem-wrap {
-  width: 100%;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.fs-nuvem-wrap .nuvem-header {
-  width: 100%;
-  max-width: 850px;
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  margin-bottom: 10px;
-}
-.fs-nuvem-wrap .nuvem-titulo {
-  font-size: 1.4rem; /* Texto da distribuição bem grande e destacado */
-  text-align: center;
-  color: var(--accent);
-  letter-spacing: 0.05em;
-}
-.fs-nuvem-canvas, .fs-nuvem-wrap .nuvem-canvas {
-  /* Cálculo dinâmico para usar o máximo de altura e largura possível sem quebrar a proporção */
-  width: min(calc(100vw - 80px), calc(100vh - 240px)) !important;
-  height: min(calc(100vw - 80px), calc(100vh - 240px)) !important;
-  max-width: 540px !important;
-  max-height: 540px !important;
-  aspect-ratio: 1/1;
-  display: block;
-  margin: 0 auto;
-  border-radius: 14px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-}
-.fs-nuvem-wrap .nuvem-legenda {
-  max-width: 850px;
-  width: 100%;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 12px 24px;
-  padding: 14px 20px;
-  justify-content: center;
-  background: var(--bg-deep);
-  border-radius: 10px;
-}
-.fs-nuvem-wrap .nuvem-leg-row {
-  font-size: 0.95rem;
-  gap: 9px;
-}
-.fs-nuvem-wrap .nuvem-leg-dot {
-  width: 12px;
-  height: 12px;
-}
 /* ===== MEDIA QUERIES ===== */
 @media (max-width: 1200px) {
   #periodic-table {
