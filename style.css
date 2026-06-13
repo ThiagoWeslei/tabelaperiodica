@@ -426,8 +426,8 @@ body {
   outline:2px solid var(--accent); outline-offset:2px;
 }
 .fullscreen-body {
-  flex:1; overflow:auto; padding:20px 28px;
-  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  flex:1; overflow:auto; padding:40px 20px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; overflow-y: auto;
   gap:16px; min-height:0;
 }
 .fullscreen-body::-webkit-scrollbar { width:6px; }
@@ -473,7 +473,7 @@ body {
 .fs-lewis-wrap .lewis-titulo { font-size:0.9rem; }
 
 /* ── Nuvem fullscreen ── */
-.fs-nuvem-wrap { width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.fs-nuvem-wrap { width:100%; display:flex; flex-direction:column; align-items:center; justify-content: center; gap:12px; }
 .fs-nuvem-wrap .nuvem-wrap { width:100%; max-width:100%; align-items:center; }
 .fs-nuvem-wrap .nuvem-header { width:100%; max-width:800px; }
 .fs-nuvem-wrap .nuvem-titulo { font-size:0.9rem; }
